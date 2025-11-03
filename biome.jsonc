@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/core", "ultracite/react"],
+  "linter": {
+    "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off"
+      },
+      "nursery": {
+        "useMaxParams": "off",
+        "noShadow": "off"
+      },
+      "style": {
+        "noMagicNumbers": "off",
+        "noNonNullAssertion": "off",
+        "useConsistentTypeDefinitions": "off"
+      },
+      "suspicious": {
+        "noConsole": "off",
+        "noExplicitAny": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.spec.ts", "**/*.test.ts", "src/components/ui/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
+}
