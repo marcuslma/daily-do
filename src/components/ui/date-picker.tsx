@@ -29,43 +29,56 @@ export function DatePicker({
   const [open, setOpen] = React.useState(false);
 
   const handleClearDate = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onDateChange(undefined);
+    setOpen(false);
   };
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
-      <PopoverTrigger asChild>
+    <div className={cn("relative", className)}>
+      <Popover onOpenChange={setOpen} open={open}>
+        <PopoverTrigger asChild>
+          <Button
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !date && "text-muted-foreground"
+            )}
+            variant="outline"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "PPP", { locale: ptBR }) : placeholder}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0">
+          <Calendar
+            autoFocus
+            captionLayout="dropdown"
+            formatters={{
+              formatMonthDropdown: (date) =>
+                date.toLocaleDateString("pt-BR", { month: "long" }),
+            }}
+            locale={ptBR}
+            mode="single"
+            onSelect={(newDate) => {
+              onDateChange(newDate);
+              setOpen(false);
+            }}
+            selected={date}
+          />
+        </PopoverContent>
+      </Popover>
+      {date && (
         <Button
-          className={cn(
-            "justify-start text-left font-normal",
-            !date && "text-muted-foreground",
-            className
-          )}
-          variant="outline"
+          className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
+          onClick={handleClearDate}
+          size="sm"
+          type="button"
+          variant="ghost"
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP", { locale: ptBR }) : placeholder}
-          {date && (
-            <X
-              className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
-              onClick={handleClearDate}
-            />
-          )}
+          <X className="h-4 w-4" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-0">
-        <Calendar
-          captionLayout="dropdown"
-          initialFocus
-          mode="single"
-          onSelect={(newDate) => {
-            onDateChange(newDate);
-            setOpen(false);
-          }}
-          selected={date}
-        />
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 }

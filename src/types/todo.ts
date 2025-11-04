@@ -6,6 +6,23 @@ export interface SubTask {
   completed: boolean;
 }
 
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
+
+export interface RecurrenceConfig {
+  type: RecurrenceType;
+  interval: number;
+  daysOfWeek?: number[];
+  endDate?: Date;
+  lastCreated?: Date;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
+}
+
 export interface Todo {
   id: string;
   text: string;
@@ -16,6 +33,9 @@ export interface Todo {
   dueDate?: Date;
   subTasks: SubTask[];
   emoji?: string;
+  description?: string;
+  categoryId?: string;
+  recurrence?: RecurrenceConfig;
 }
 
 export type Filter = "all" | "active" | "completed" | "overdue";

@@ -1,7 +1,8 @@
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import { Plus, Smile, Tag, X } from "lucide-react";
+import { Info, Plus, Smile, Tag, X } from "lucide-react";
 import { useState } from "react";
+import { useTheme } from "@/components/theme/theme-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,8 +22,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { Priority, SubTask } from "@/types/todo";
+import { useCategories } from "@/hooks/use-categories";
+import type { Priority, RecurrenceConfig, SubTask } from "@/types/todo";
 
 interface TodoCreateDialogProps {
   open: boolean;
@@ -33,7 +44,10 @@ interface TodoCreateDialogProps {
     tags: string[],
     dueDate?: Date,
     subTasks?: SubTask[],
-    emoji?: string
+    emoji?: string,
+    description?: string,
+    categoryId?: string,
+    recurrence?: RecurrenceConfig
   ) => void;
 }
 
@@ -42,6 +56,8 @@ export function TodoCreateDialog({
   onOpenChange,
   onSave,
 }: TodoCreateDialogProps) {
+  const { categories } = useCategories();
+  const { theme } = useTheme();
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [tags, setTags] = useState<string[]>([]);
@@ -51,6 +67,12 @@ export function TodoCreateDialog({
   const [subTaskInput, setSubTaskInput] = useState("");
   const [emoji, setEmoji] = useState<string | undefined>();
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [description, setDescription] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [recurrenceType, setRecurrenceType] =
+    useState<RecurrenceConfig["type"]>("none");
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
 
   const resetForm = () => {
     setText("");
@@ -61,11 +83,36 @@ export function TodoCreateDialog({
     setSubTasks([]);
     setSubTaskInput("");
     setEmoji(undefined);
+    setDescription("");
+    setCategoryId("");
+    setRecurrenceType("none");
+    setRecurrenceInterval(1);
+    setRecurrenceDays([]);
   };
 
   const handleSave = () => {
     if (text.trim()) {
-      onSave(text.trim(), priority, tags, dueDate, subTasks, emoji);
+      const recurrence: RecurrenceConfig | undefined =
+        recurrenceType !== "none"
+          ? {
+              type: recurrenceType,
+              interval: recurrenceInterval,
+              daysOfWeek:
+                recurrenceType === "weekly" ? recurrenceDays : undefined,
+            }
+          : undefined;
+
+      onSave(
+        text.trim(),
+        priority,
+        tags,
+        dueDate,
+        subTasks,
+        emoji,
+        description || undefined,
+        categoryId || undefined,
+        recurrence
+      );
       resetForm();
       onOpenChange(false);
     }
@@ -127,6 +174,16 @@ export function TodoCreateDialog({
     }
   };
 
+  // Calcula o tema efetivo (respeita a preferência do sistema se theme === "system")
+  const getEffectiveTheme = () => {
+    if (theme === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+    return theme;
+  };
+
   return (
     <Dialog
       onOpenChange={(isOpen) => {
@@ -166,7 +223,7 @@ export function TodoCreateDialog({
                     data={data}
                     locale="pt"
                     onEmojiSelect={handleEmojiSelect}
-                    theme="auto"
+                    theme={getEffectiveTheme()}
                   />
                 </PopoverContent>
               </Popover>
@@ -216,6 +273,133 @@ export function TodoCreateDialog({
               placeholder="Selecione uma data"
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              className="min-h-20"
+              id="description"
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Adicione detalhes sobre esta tarefa..."
+              value={description}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Categoria</Label>
+            <Select
+              onValueChange={(value) =>
+                setCategoryId(value === "none" ? "" : value)
+              }
+              value={categoryId || "none"}
+            >
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem categoria</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    <span className="flex items-center gap-2">
+                      {category.icon && <span>{category.icon}</span>}
+                      <span>{category.name}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label htmlFor="recurrence-type">Recorrência</Label>
+            <Select
+              onValueChange={(value) =>
+                setRecurrenceType(value as RecurrenceConfig["type"])
+              }
+              value={recurrenceType}
+            >
+              <SelectTrigger id="recurrence-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Não repetir</SelectItem>
+                <SelectItem value="daily">Diariamente</SelectItem>
+                <SelectItem value="weekly">Semanalmente</SelectItem>
+                <SelectItem value="monthly">Mensalmente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {recurrenceType !== "none" && (
+            <>
+              {(recurrenceType === "daily" || recurrenceType === "monthly") && (
+                <div className="space-y-2">
+                  <Label htmlFor="interval">
+                    A cada {recurrenceType === "daily" && "dia(s)"}
+                    {recurrenceType === "monthly" && "mês(es)"}
+                  </Label>
+                  <Input
+                    id="interval"
+                    min={1}
+                    onChange={(e) => {
+                      const val = Number.parseInt(e.target.value, 10);
+                      setRecurrenceInterval(Number.isNaN(val) ? 1 : val);
+                    }}
+                    type="number"
+                    value={recurrenceInterval.toString()}
+                  />
+                </div>
+              )}
+
+              {recurrenceType === "weekly" && (
+                <div className="space-y-2">
+                  <Label>Dias da semana</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Dom", value: 0 },
+                      { label: "Seg", value: 1 },
+                      { label: "Ter", value: 2 },
+                      { label: "Qua", value: 3 },
+                      { label: "Qui", value: 4 },
+                      { label: "Sex", value: 5 },
+                      { label: "Sáb", value: 6 },
+                    ].map((day) => (
+                      <Button
+                        key={day.value}
+                        onClick={() => {
+                          if (recurrenceDays.includes(day.value)) {
+                            setRecurrenceDays(
+                              recurrenceDays.filter((d) => d !== day.value)
+                            );
+                          } else {
+                            setRecurrenceDays([...recurrenceDays, day.value]);
+                          }
+                        }}
+                        size="sm"
+                        type="button"
+                        variant={
+                          recurrenceDays.includes(day.value)
+                            ? "default"
+                            : "outline"
+                        }
+                      >
+                        {day.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
+                <Info className="mr-2 inline-block size-4" /> A tarefa será
+                automaticamente recriada quando você marcá-la como concluída.
+              </div>
+            </>
+          )}
+
+          <Separator />
 
           <div className="space-y-2">
             <Label htmlFor="tag-input">Tags</Label>

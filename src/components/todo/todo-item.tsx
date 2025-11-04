@@ -8,12 +8,15 @@ import {
 import { ptBR } from "date-fns/locale";
 import {
   AlertCircle,
+  AlignLeft,
   Calendar,
   CalendarClock,
   ChevronDown,
   ChevronRight,
+  Folder,
   Pencil,
   Plus,
+  Repeat,
   Trash2,
   X,
 } from "lucide-react";
@@ -28,6 +31,13 @@ import {
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useCategories } from "@/hooks/use-categories";
 import { cn } from "@/lib/utils";
 import type { Todo } from "@/types/todo";
 
@@ -63,7 +73,9 @@ export function TodoItem({
   onToggleSubTask,
   onDeleteSubTask,
 }: TodoItemProps) {
+  const { getCategoryById } = useCategories();
   const [isOpen, setIsOpen] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [newSubTaskText, setNewSubTaskText] = useState("");
   const formattedDate = new Date(todo.createdAt).toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -71,6 +83,34 @@ export function TodoItem({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const category = todo.categoryId ? getCategoryById(todo.categoryId) : null;
+
+  const getRecurrenceText = () => {
+    if (!todo.recurrence || todo.recurrence.type === "none") {
+      return null;
+    }
+
+    const { type, interval, daysOfWeek } = todo.recurrence;
+
+    switch (type) {
+      case "daily":
+        return interval === 1 ? "Diariamente" : `A cada ${interval} dias`;
+      case "weekly":
+        if (daysOfWeek && daysOfWeek.length > 0) {
+          const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+          const days = daysOfWeek.map((d) => dayNames[d]).join(", ");
+          return `Semanal: ${days}`;
+        }
+        return "Semanalmente";
+      case "monthly":
+        return interval === 1 ? "Mensalmente" : `A cada ${interval} meses`;
+      default:
+        return null;
+    }
+  };
+
+  const recurrenceText = getRecurrenceText();
 
   const getDueDateInfo = () => {
     if (!todo.dueDate) {
@@ -168,12 +208,85 @@ export function TodoItem({
             {priorityLabels[todo.priority]}
           </Badge>
 
+          {category && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    className="text-xs"
+                    style={{
+                      backgroundColor: `${category.color}20`,
+                      color: category.color,
+                      borderColor: `${category.color}40`,
+                    }}
+                    variant="outline"
+                  >
+                    <Folder className="mr-1 size-3" />
+                    {category.icon && (
+                      <span className="mr-1">{category.icon}</span>
+                    )}
+                    {category.name}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Categoria: {category.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          {recurrenceText && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="text-xs" variant="secondary">
+                    <Repeat className="mr-1 size-3" />
+                    {recurrenceText}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Tarefa recorrente: Recria automaticamente após conclusão
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           {todo.tags.map((tag) => (
             <Badge className="text-xs" key={tag} variant="outline">
               {tag}
             </Badge>
           ))}
         </div>
+
+        {todo.description && (
+          <Collapsible
+            onOpenChange={setIsDescriptionOpen}
+            open={isDescriptionOpen}
+          >
+            <CollapsibleTrigger asChild>
+              <Button
+                className="h-6 px-2 text-muted-foreground text-xs hover:text-foreground"
+                size="sm"
+                variant="ghost"
+              >
+                <AlignLeft className="mr-1 size-3" />
+                {isDescriptionOpen ? "Ocultar" : "Ver"} descrição
+                {isDescriptionOpen ? (
+                  <ChevronDown className="ml-1 size-3" />
+                ) : (
+                  <ChevronRight className="ml-1 size-3" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <div className="whitespace-pre-wrap rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
+                {todo.description}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         {hasSubTasks && (
           <Collapsible onOpenChange={setIsOpen} open={isOpen}>

@@ -88,9 +88,22 @@ function App() {
     tags: string[],
     dueDate?: Date,
     subTasks?: import("@/types/todo").SubTask[],
-    emoji?: string
+    emoji?: string,
+    description?: string,
+    categoryId?: string,
+    recurrence?: import("@/types/todo").RecurrenceConfig
   ) => {
-    addTodo(text, priority, tags, dueDate, subTasks, emoji);
+    addTodo(
+      text,
+      priority,
+      tags,
+      dueDate,
+      subTasks,
+      emoji,
+      description,
+      categoryId,
+      recurrence
+    );
     toast.success("Tarefa adicionada!", {
       description: text,
     });

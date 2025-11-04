@@ -1,7 +1,8 @@
-import { isPast, isToday } from "date-fns";
+import { addDays, addMonths, isPast, isToday } from "date-fns";
 import { useMemo } from "react";
 import type {
   Filter,
+  RecurrenceConfig,
   SortBy,
   SortDirection,
   SubTask,
@@ -16,6 +17,31 @@ const TAG_REGEX = /tag:(\w+)/;
 const OVERDUE_REGEX = /overdue:(true|false)/;
 const DUE_REGEX = /due:(today|tomorrow|week)/;
 
+// Helper function to calculate next due date based on recurrence
+function calculateNextDueDate(
+  currentDate: Date | undefined,
+  recurrence: RecurrenceConfig
+): Date | undefined {
+  if (!currentDate) {
+    return;
+  }
+
+  const baseDate = new Date(currentDate);
+
+  switch (recurrence.type) {
+    case "daily":
+      return addDays(baseDate, recurrence.interval);
+    case "weekly": {
+      // For weekly, add 7 days times the interval
+      return addDays(baseDate, 7 * recurrence.interval);
+    }
+    case "monthly":
+      return addMonths(baseDate, recurrence.interval);
+    default:
+      return;
+  }
+}
+
 export function useTodos() {
   const [todos, setTodos] = useLocalStorage<Todo[]>("daily-do-todos", []);
 
@@ -25,7 +51,10 @@ export function useTodos() {
     tags: string[] = [],
     dueDate?: Date,
     subTasks: SubTask[] = [],
-    emoji?: string
+    emoji?: string,
+    description?: string,
+    categoryId?: string,
+    recurrence?: Todo["recurrence"]
   ) => {
     const newTodo: Todo = {
       id: crypto.randomUUID(),
@@ -37,16 +66,59 @@ export function useTodos() {
       dueDate,
       subTasks,
       emoji,
+      description,
+      categoryId,
+      recurrence,
     };
     setTodos((prev) => [newTodo, ...prev]);
   };
 
   const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+    setTodos((prev) => {
+      const todo = prev.find((t) => t.id === id);
+      if (!todo) {
+        return prev;
+      }
+
+      // Check if marking as completed and has recurrence
+      if (
+        !todo.completed &&
+        todo.recurrence &&
+        todo.recurrence.type !== "none"
+      ) {
+        // Calculate next due date
+        const nextDueDate = calculateNextDueDate(todo.dueDate, todo.recurrence);
+
+        // Create new recurring task
+        const newRecurringTodo: Todo = {
+          ...todo,
+          id: crypto.randomUUID(),
+          completed: false,
+          createdAt: new Date(),
+          dueDate: nextDueDate,
+          subTasks: todo.subTasks.map((st) => ({
+            ...st,
+            id: crypto.randomUUID(),
+            completed: false,
+          })),
+          recurrence: {
+            ...todo.recurrence,
+            lastCreated: new Date(),
+          },
+        };
+
+        // Mark current as completed and add new one
+        return [
+          newRecurringTodo,
+          ...prev.map((t) => (t.id === id ? { ...t, completed: true } : t)),
+        ];
+      }
+
+      // Normal toggle
+      return prev.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
+      );
+    });
   };
 
   const deleteTodo = (id: string) => {
