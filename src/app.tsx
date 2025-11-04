@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { CheckCircle, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -169,6 +171,9 @@ function App() {
             </h1>
             <p className="text-muted-foreground">
               Organize suas tarefas diárias de forma simples e eficiente
+            </p>
+            <p className="bg-linear-to-r from-primary to-primary/60 bg-clip-text font-bold text-transparent first-letter:uppercase">
+              {format(new Date(), "PPPP", { locale: ptBR })}
             </p>
           </div>
           <div className="flex flex-1 justify-end gap-2">
