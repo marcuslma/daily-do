@@ -43,8 +43,8 @@ export function useNotifications(todos: Todo[]) {
       if (Notification.permission === "granted" && settings.enabled) {
         new Notification(title, {
           body,
-          icon: icon || "/vite.svg",
-          badge: "/vite.svg",
+          icon: icon || "/daily-do.svg",
+          badge: "/daily-do.svg",
         });
       }
     },
