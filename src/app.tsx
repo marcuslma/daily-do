@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CheckCircle, GripVertical, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { KeyboardShortcutsHelp } from "@/components/settings/keyboard-shortcuts-help";
 import { NotificationSettings } from "@/components/settings/notification-settings";
@@ -16,7 +16,15 @@ import { TodoStats } from "@/components/todo/todo-stats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
+import { Toggle } from "@/components/ui/toggle";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useManualSort } from "@/hooks/use-manual-sort";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTodos } from "@/hooks/use-todos";
 import type { Filter, SortBy, SortDirection, Todo } from "@/types/todo";
@@ -47,6 +55,7 @@ function App() {
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
 
   const notifications = useNotifications(todos);
+  const manualSort = useManualSort();
 
   // Keyboard shortcuts
   useKeyboardShortcuts([
@@ -76,8 +85,45 @@ function App() {
 
   const filteredAndSortedTodos = useMemo(() => {
     const filtered = filterTodos(filter, searchQuery);
-    return sortTodos(filtered, sortBy, sortDirection);
-  }, [filter, searchQuery, sortBy, sortDirection, filterTodos, sortTodos]);
+    const sorted = sortTodos(filtered, sortBy, sortDirection);
+
+    // Apply manual sort if enabled
+    if (manualSort.enabled && manualSort.order.length > 0) {
+      // Create a map for quick lookup
+      const orderMap = new Map(
+        manualSort.order.map((id, index) => [id, index])
+      );
+      // Sort based on the manual order, keeping unordered items at the end
+      return [...sorted].sort((a, b) => {
+        const indexA = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const indexB = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return indexA - indexB;
+      });
+    }
+
+    return sorted;
+  }, [
+    filter,
+    searchQuery,
+    sortBy,
+    sortDirection,
+    filterTodos,
+    sortTodos,
+    manualSort.enabled,
+    manualSort.order,
+  ]);
+
+  // Initialize manual sort order when manual sort is first enabled
+  useEffect(() => {
+    if (manualSort.enabled && manualSort.order.length === 0) {
+      manualSort.setOrder(filteredAndSortedTodos.map((t) => t.id));
+    }
+  }, [
+    manualSort.enabled,
+    manualSort.order.length,
+    manualSort.setOrder,
+    filteredAndSortedTodos,
+  ]);
 
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
@@ -156,6 +202,23 @@ function App() {
     );
   };
 
+  const handleReorder = (reorderedTodos: Todo[]) => {
+    manualSort.updateOrder(reorderedTodos.map((t) => t.id));
+  };
+
+  const handleToggleManualSort = () => {
+    if (manualSort.enabled) {
+      toast.success("Ordenação manual desativada");
+    } else {
+      // When enabling, initialize with current order
+      manualSort.setOrder(filteredAndSortedTodos.map((t) => t.id));
+      toast.success("Ordenação manual ativada", {
+        description: "Arraste as tarefas para reorganizá-las",
+      });
+    }
+    manualSort.toggleManualSort();
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto max-w-5xl space-y-6 px-4 py-8">
@@ -226,19 +289,46 @@ function App() {
               overdueCount={stats.overdue}
               searchQuery={searchQuery}
             />
-            <TodoSort
-              direction={sortDirection}
-              onDirectionChange={() =>
-                setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-              }
-              onSortChange={setSortBy}
-              sortBy={sortBy}
-            />
+            <div className="flex items-center justify-between gap-4">
+              <TodoSort
+                direction={sortDirection}
+                onDirectionChange={() =>
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+                }
+                onSortChange={setSortBy}
+                sortBy={sortBy}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toggle
+                      aria-label="Ordenação manual"
+                      className="gap-2"
+                      onPressedChange={handleToggleManualSort}
+                      pressed={manualSort.enabled}
+                      size="sm"
+                    >
+                      <GripVertical className="size-4" />
+                      Ordenação manual
+                    </Toggle>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {manualSort.enabled
+                        ? "Arraste tarefas para reorganizá-las"
+                        : "Ativar ordenação manual por arrastar e soltar"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <TodoList
+              manualSortEnabled={manualSort.enabled}
               onAddSubTask={addSubTask}
               onDelete={handleDeleteTodo}
               onDeleteSubTask={deleteSubTask}
               onEdit={handleEditTodo}
+              onReorder={handleReorder}
               onToggle={handleToggleTodo}
               onToggleSubTask={toggleSubTask}
               todos={filteredAndSortedTodos}

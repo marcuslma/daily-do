@@ -1,3 +1,5 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   differenceInDays,
   format,
@@ -14,6 +16,7 @@ import {
   ChevronDown,
   ChevronRight,
   Folder,
+  GripVertical,
   Pencil,
   Plus,
   Repeat,
@@ -49,6 +52,7 @@ interface TodoItemProps {
   onAddSubTask?: (todoId: string, text: string) => void;
   onToggleSubTask?: (todoId: string, subTaskId: string) => void;
   onDeleteSubTask?: (todoId: string, subTaskId: string) => void;
+  draggable?: boolean;
 }
 
 const priorityColors = {
@@ -72,11 +76,30 @@ export function TodoItem({
   onAddSubTask,
   onToggleSubTask,
   onDeleteSubTask,
+  draggable = false,
 }: TodoItemProps) {
   const { getCategoryById } = useCategories();
   const [isOpen, setIsOpen] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [newSubTaskText, setNewSubTaskText] = useState("");
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: todo.id,
+    disabled: !draggable,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
   const formattedDate = new Date(todo.createdAt).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
@@ -168,7 +191,26 @@ export function TodoItem({
   };
 
   return (
-    <div className="group flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
+    <div
+      className={cn(
+        "group flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50",
+        isDragging && "z-50 cursor-grabbing shadow-lg",
+        draggable && !isDragging && "cursor-grab"
+      )}
+      ref={setNodeRef}
+      style={style}
+    >
+      {draggable && (
+        <button
+          className="mt-0.5 cursor-grab text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
+          type="button"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-5" />
+        </button>
+      )}
+
       <Checkbox
         checked={todo.completed}
         className="mt-0.5"

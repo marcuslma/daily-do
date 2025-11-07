@@ -1,5 +1,4 @@
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { Info, Plus, Smile, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -118,8 +117,8 @@ export function TodoCreateDialog({
     }
   };
 
-  const handleEmojiSelect = (emoji: any) => {
-    setEmoji(emoji.native);
+  const handleEmojiSelect = (emojiData: { emoji: string }) => {
+    setEmoji(emojiData.emoji);
     setEmojiPickerOpen(false);
   };
 
@@ -175,13 +174,11 @@ export function TodoCreateDialog({
   };
 
   // Calcula o tema efetivo (respeita a preferência do sistema se theme === "system")
-  const getEffectiveTheme = () => {
+  const getEffectiveTheme = (): Theme => {
     if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+      return Theme.AUTO;
     }
-    return theme;
+    return theme === "dark" ? Theme.DARK : Theme.LIGHT;
   };
 
   return (
@@ -219,10 +216,10 @@ export function TodoCreateDialog({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-auto p-0">
-                  <Picker
-                    data={data}
-                    locale="pt"
-                    onEmojiSelect={handleEmojiSelect}
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiSelect}
+                    previewConfig={{ showPreview: false }}
+                    searchPlaceHolder="Buscar emoji..."
                     theme={getEffectiveTheme()}
                   />
                 </PopoverContent>
