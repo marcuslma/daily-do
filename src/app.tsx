@@ -1,15 +1,19 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  CheckCheck,
+  Calendar,
   CheckCircle,
+  Command,
   GripVertical,
   HelpCircle,
+  List,
+  MoreVertical,
   Plus,
-  Trash2,
+  Trash,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { CalendarViewDraggable } from "@/components/calendar-view-draggable";
 import { KeyboardShortcutsHelp } from "@/components/settings/keyboard-shortcuts-help";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
@@ -22,12 +26,19 @@ import { TodoSort } from "@/components/todo/todo-sort";
 import { TodoStats } from "@/components/todo/todo-stats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { Toggle } from "@/components/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useConfetti } from "@/hooks/use-confetti";
@@ -61,6 +72,7 @@ function App() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const notifications = useNotifications(todos);
   const manualSort = useManualSort();
@@ -69,7 +81,7 @@ function App() {
   // Keyboard shortcuts
   useKeyboardShortcuts([
     {
-      key: "n",
+      key: "k",
       ctrl: true,
       description: "Nova tarefa",
       action: () => setIsCreateDialogOpen(true),
@@ -83,6 +95,12 @@ function App() {
         ) as HTMLInputElement;
         searchInput?.focus();
       },
+    },
+    {
+      key: "/",
+      ctrl: true,
+      description: "Painel de comandos",
+      action: () => setIsShortcutsHelpOpen(true),
     },
     {
       key: "?",
@@ -251,6 +269,16 @@ function App() {
     manualSort.toggleManualSort();
   };
 
+  const handleTodoDateChange = (todoId: string, newDate: Date) => {
+    const todo = todos.find((t) => t.id === todoId);
+    if (todo) {
+      updateTodo(todoId, { dueDate: newDate });
+      toast.success("Data da tarefa atualizada!", {
+        description: `${todo.text} → ${format(newDate, "PP", { locale: ptBR })}`,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto max-w-5xl space-y-6 px-4 py-8">
@@ -272,6 +300,20 @@ function App() {
             </p>
           </div>
           <div className="flex flex-1 justify-end gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setIsShortcutsHelpOpen(true)}
+                  size="icon"
+                  variant="outline"
+                >
+                  <Command className="size-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Atalhos de Teclado (Ctrl+/)</p>
+              </TooltipContent>
+            </Tooltip>
             <NotificationSettings
               enabled={notifications.settings.enabled}
               hasPermission={notifications.hasPermission}
@@ -293,91 +335,116 @@ function App() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Minhas Tarefas</CardTitle>
             <div className="flex items-center gap-2">
-              {stats.completed > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        onClick={handleClearCompleted}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <CheckCheck />
-                        <Trash2 className="-ml-1" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        Limpar {stats.completed} tarefa
-                        {stats.completed !== 1 ? "s" : ""} concluída
-                        {stats.completed !== 1 ? "s" : ""}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
               <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
                 <Plus className="size-4" />
                 Nova Tarefa
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost">
+                    <MoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      setViewMode(viewMode === "list" ? "calendar" : "list")
+                    }
+                  >
+                    {viewMode === "list" ? (
+                      <>
+                        <Calendar className="mr-2 size-4" />
+                        Visualização em Calendário
+                      </>
+                    ) : (
+                      <>
+                        <List className="mr-2 size-4" />
+                        Visualização em Lista
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  {stats.completed > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleClearCompleted}
+                        variant="destructive"
+                      >
+                        <Trash className="mr-2 size-4" />
+                        Limpar Concluídas
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <TodoFilters
-              activeCount={stats.active}
-              completedCount={stats.completed}
-              filter={filter}
-              onFilterChange={setFilter}
-              onSearchChange={setSearchQuery}
-              overdueCount={stats.overdue}
-              searchQuery={searchQuery}
-            />
-            <div className="flex items-center justify-between gap-4">
-              <TodoSort
-                direction={sortDirection}
-                onDirectionChange={() =>
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-                }
-                onSortChange={setSortBy}
-                sortBy={sortBy}
+            {viewMode === "list" ? (
+              <>
+                <TodoFilters
+                  activeCount={stats.active}
+                  completedCount={stats.completed}
+                  filter={filter}
+                  onFilterChange={setFilter}
+                  onSearchChange={setSearchQuery}
+                  overdueCount={stats.overdue}
+                  searchQuery={searchQuery}
+                />
+                <div className="flex items-center justify-between gap-4">
+                  <TodoSort
+                    direction={sortDirection}
+                    onDirectionChange={() =>
+                      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+                    }
+                    onSortChange={setSortBy}
+                    sortBy={sortBy}
+                  />
+                  <div className="flex flex-row items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="size-4 cursor-help text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {manualSort.enabled
+                            ? "Arraste tarefas para reorganizá-las"
+                            : "Ativar ordenação manual por arrastar e soltar"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Toggle
+                      aria-label="Ordenação Manual"
+                      onPressedChange={handleToggleManualSort}
+                      pressed={manualSort.enabled}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <GripVertical className="size-4" />
+                      Ordenação Manual
+                    </Toggle>
+                  </div>
+                </div>
+                <TodoList
+                  manualSortEnabled={manualSort.enabled}
+                  onAddSubTask={addSubTask}
+                  onDelete={handleDeleteTodo}
+                  onDeleteSubTask={deleteSubTask}
+                  onEdit={handleEditTodo}
+                  onReorder={handleReorder}
+                  onToggle={handleToggleTodo}
+                  onToggleSubTask={toggleSubTask}
+                  todos={filteredAndSortedTodos}
+                />
+              </>
+            ) : (
+              <CalendarViewDraggable
+                onTodoClick={handleEditTodo}
+                onTodoDateChange={handleTodoDateChange}
+                todos={filteredAndSortedTodos}
               />
-              <div className="flex flex-row items-center gap-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="size-4 cursor-help text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      {manualSort.enabled
-                        ? "Arraste tarefas para reorganizá-las"
-                        : "Ativar ordenação manual por arrastar e soltar"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-                <Toggle
-                  aria-label="Ordenação Manual"
-                  onPressedChange={handleToggleManualSort}
-                  pressed={manualSort.enabled}
-                  size="sm"
-                  variant="outline"
-                >
-                  <GripVertical className="size-4" />
-                  Ordenação Manual
-                </Toggle>
-              </div>
-            </div>
-            <TodoList
-              manualSortEnabled={manualSort.enabled}
-              onAddSubTask={addSubTask}
-              onDelete={handleDeleteTodo}
-              onDeleteSubTask={deleteSubTask}
-              onEdit={handleEditTodo}
-              onReorder={handleReorder}
-              onToggle={handleToggleTodo}
-              onToggleSubTask={toggleSubTask}
-              todos={filteredAndSortedTodos}
-            />
+            )}
           </CardContent>
         </Card>
 
