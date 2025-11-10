@@ -86,46 +86,44 @@ export function TodoStats({ stats }: TodoStatsProps) {
               </div>
 
               {/* Por Prioridade */}
-              {stats.active > 0 && (
-                <div className="space-y-4">
-                  <h3 className="flex items-center gap-2 font-semibold text-muted-foreground text-sm">
-                    <Signal className="size-4" />
-                    Tarefas por Prioridade
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between rounded-lg border p-3">
-                      <div className="flex items-center gap-2">
-                        <Badge className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400">
-                          Alta
-                        </Badge>
-                      </div>
-                      <span className="font-bold text-2xl text-red-600 dark:text-red-400">
-                        {stats.byPriority.high}
-                      </span>
+              <div className="space-y-4">
+                <h3 className="flex items-center gap-2 font-semibold text-muted-foreground text-sm">
+                  <Signal className="size-4" />
+                  Tarefas por Prioridade
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400">
+                        Alta
+                      </Badge>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3">
-                      <div className="flex items-center gap-2">
-                        <Badge className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">
-                          Média
-                        </Badge>
-                      </div>
-                      <span className="font-bold text-2xl text-yellow-600 dark:text-yellow-400">
-                        {stats.byPriority.medium}
-                      </span>
+                    <span className="font-bold text-2xl text-red-600 dark:text-red-400">
+                      {stats.byPriority.high}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">
+                        Média
+                      </Badge>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg border p-3">
-                      <div className="flex items-center gap-2">
-                        <Badge className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400">
-                          Baixa
-                        </Badge>
-                      </div>
-                      <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
-                        {stats.byPriority.low}
-                      </span>
+                    <span className="font-bold text-2xl text-yellow-600 dark:text-yellow-400">
+                      {stats.byPriority.medium}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                        Baixa
+                      </Badge>
                     </div>
+                    <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">
+                      {stats.byPriority.low}
+                    </span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

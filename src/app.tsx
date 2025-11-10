@@ -124,14 +124,21 @@ function App() {
 
   // Initialize manual sort order when manual sort is first enabled
   useEffect(() => {
-    if (manualSort.enabled && manualSort.order.length === 0) {
-      manualSort.setOrder(filteredAndSortedTodos.map((t) => t.id));
+    if (
+      manualSort.enabled &&
+      manualSort.order.length === 0 &&
+      todos.length > 0
+    ) {
+      manualSort.setOrder(todos.map((t) => t.id));
     }
+    // Note: Using todos instead of filteredAndSortedTodos to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     manualSort.enabled,
     manualSort.order.length,
     manualSort.setOrder,
-    filteredAndSortedTodos,
+    todos.length,
+    todos.map,
   ]);
 
   const handleEditTodo = (todo: Todo) => {
