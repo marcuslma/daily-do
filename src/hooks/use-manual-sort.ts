@@ -10,7 +10,7 @@ export function useManualSort() {
   const [sortState, setSortState] = useLocalStorage<ManualSortState>(
     "manual-sort",
     {
-      enabled: false,
+      enabled: true,
       order: [],
     }
   );
@@ -37,6 +37,20 @@ export function useManualSort() {
     setSortState((prev) => ({ ...prev, order: todoIds }));
   };
 
+  const prependToOrder = (todoId: string) => {
+    setSortState((prev) => ({
+      ...prev,
+      order: [todoId, ...prev.order],
+    }));
+  };
+
+  const removeFromOrder = (todoId: string) => {
+    setSortState((prev) => ({
+      ...prev,
+      order: prev.order.filter((id) => id !== todoId),
+    }));
+  };
+
   return {
     enabled: sortState.enabled,
     order: sortState.order,
@@ -47,5 +61,7 @@ export function useManualSort() {
     toggleManualSort,
     updateOrder,
     setOrder,
+    prependToOrder,
+    removeFromOrder,
   };
 }

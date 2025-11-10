@@ -95,6 +95,7 @@ export function TodoFilters({
         <ToggleGroup
           className="flex-1"
           onValueChange={(value) => value && onFilterChange(value as Filter)}
+          size="sm"
           spacing={0}
           type="single"
           value={filter}
@@ -104,7 +105,7 @@ export function TodoFilters({
             Todas ({activeCount + completedCount})
           </ToggleGroupItem>
           <ToggleGroupItem className="flex-1" value="active">
-            Ativas ({activeCount})
+            Pendentes ({activeCount})
           </ToggleGroupItem>
           <ToggleGroupItem className="flex-1" value="overdue">
             Atrasadas ({overdueCount})

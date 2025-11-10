@@ -1,4 +1,4 @@
-import EmojiPicker, { Theme } from "emoji-picker-react";
+import EmojiPicker, { EmojiStyle, Theme } from "emoji-picker-react";
 import { Info, Plus, Smile, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -217,6 +217,7 @@ export function TodoCreateDialog({
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-auto p-0">
                   <EmojiPicker
+                    emojiStyle={EmojiStyle.NATIVE}
                     onEmojiClick={handleEmojiSelect}
                     previewConfig={{ showPreview: false }}
                     searchPlaceHolder="Buscar emoji..."
@@ -399,7 +400,7 @@ export function TodoCreateDialog({
           <Separator />
 
           <div className="space-y-2">
-            <Label htmlFor="tag-input">Tags</Label>
+            <Label htmlFor="tag-input">Etiquetas</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
@@ -407,7 +408,7 @@ export function TodoCreateDialog({
                   id="tag-input"
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagInputKeyDown}
-                  placeholder="Adicionar tag..."
+                  placeholder="Adicionar etiqueta..."
                   value={tagInput}
                 />
                 <Tag className="-translate-y-1/2 absolute top-1/2 right-2 size-4 text-muted-foreground" />

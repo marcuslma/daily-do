@@ -1,6 +1,13 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle, GripVertical, Plus, Trash2 } from "lucide-react";
+import {
+  CheckCheck,
+  CheckCircle,
+  GripVertical,
+  HelpCircle,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { KeyboardShortcutsHelp } from "@/components/settings/keyboard-shortcuts-help";
@@ -23,6 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useConfetti } from "@/hooks/use-confetti";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useManualSort } from "@/hooks/use-manual-sort";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -56,6 +64,7 @@ function App() {
 
   const notifications = useNotifications(todos);
   const manualSort = useManualSort();
+  const { celebrate } = useConfetti();
 
   // Keyboard shortcuts
   useKeyboardShortcuts([
@@ -141,6 +150,7 @@ function App() {
     categoryId?: string,
     recurrence?: import("@/types/todo").RecurrenceConfig
   ) => {
+    const newId = crypto.randomUUID();
     addTodo(
       text,
       priority,
@@ -150,8 +160,13 @@ function App() {
       emoji,
       description,
       categoryId,
-      recurrence
+      recurrence,
+      newId
     );
+
+    // Always add to manual sort order at the top
+    manualSort.prependToOrder(newId);
+
     toast.success("Tarefa adicionada!", {
       description: text,
     });
@@ -161,18 +176,28 @@ function App() {
     const todo = todos.find((t) => t.id === id);
     toggleTodo(id);
     if (todo) {
-      toast.success(
-        todo.completed ? "Tarefa reaberta!" : "Tarefa concluída! 🎉",
-        {
+      if (todo.completed) {
+        // Task is being reopened
+        toast.success("Tarefa reaberta!", {
           description: todo.text,
-        }
-      );
+        });
+      } else {
+        // Task is being completed
+        celebrate();
+        toast.success("Tarefa concluída! 🎉", {
+          description: todo.text,
+        });
+      }
     }
   };
 
   const handleDeleteTodo = (id: string) => {
     const todo = todos.find((t) => t.id === id);
     deleteTodo(id);
+
+    // Always remove from manual sort order
+    manualSort.removeFromOrder(id);
+
     if (todo) {
       toast.success("Tarefa removida", {
         description: todo.text,
@@ -260,24 +285,36 @@ function App() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Minhas Tarefas</CardTitle>
-            <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
-              <Plus className="mr-2 size-4" />
-              Nova Tarefa
-            </Button>
-          </CardHeader>
-          <CardHeader className="flex flex-row items-center justify-between pt-0">
-            <div className="w-full" />
-            {stats.completed > 0 && (
-              <Button
-                className="text-muted-foreground hover:text-destructive"
-                onClick={handleClearCompleted}
-                size="sm"
-                variant="ghost"
-              >
-                <Trash2 className="mr-2 size-4" />
-                Limpar concluídas
+            <div className="flex items-center gap-2">
+              {stats.completed > 0 && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        onClick={handleClearCompleted}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <CheckCheck />
+                        <Trash2 className="-ml-1" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Limpar {stats.completed} tarefa
+                        {stats.completed !== 1 ? "s" : ""} concluída
+                        {stats.completed !== 1 ? "s" : ""}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
+                <Plus className="size-4" />
+                Nova Tarefa
               </Button>
-            )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <TodoFilters
@@ -298,19 +335,10 @@ function App() {
                 onSortChange={setSortBy}
                 sortBy={sortBy}
               />
-              <TooltipProvider>
+              <div className="flex flex-row items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Toggle
-                      aria-label="Ordenação manual"
-                      className="gap-2"
-                      onPressedChange={handleToggleManualSort}
-                      pressed={manualSort.enabled}
-                      size="sm"
-                    >
-                      <GripVertical className="size-4" />
-                      Ordenação manual
-                    </Toggle>
+                    <HelpCircle className="size-4 cursor-help text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
@@ -320,7 +348,17 @@ function App() {
                     </p>
                   </TooltipContent>
                 </Tooltip>
-              </TooltipProvider>
+                <Toggle
+                  aria-label="Ordenação Manual"
+                  onPressedChange={handleToggleManualSort}
+                  pressed={manualSort.enabled}
+                  size="sm"
+                  variant="outline"
+                >
+                  <GripVertical className="size-4" />
+                  Ordenação Manual
+                </Toggle>
+              </div>
             </div>
             <TodoList
               manualSortEnabled={manualSort.enabled}

@@ -86,9 +86,9 @@ export function NotificationSettings({
               variant={enabled ? "default" : "outline"}
             >
               {enabled ? (
-                <Bell className="mr-2 size-4" />
+                <Bell className="size-4" />
               ) : (
-                <BellOff className="mr-2 size-4" />
+                <BellOff className="size-4" />
               )}
               {enabled ? "Desativar" : "Ativar"}
             </Button>

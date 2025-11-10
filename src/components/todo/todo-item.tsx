@@ -20,6 +20,8 @@ import {
   Pencil,
   Plus,
   Repeat,
+  Signal,
+  Tag,
   Trash2,
   X,
 } from "lucide-react";
@@ -246,9 +248,37 @@ export function TodoItem({
             </div>
           )}
 
-          <Badge className={cn("text-xs", priorityColors[todo.priority])}>
-            {priorityLabels[todo.priority]}
-          </Badge>
+          {recurrenceText && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="text-xs" variant="secondary">
+                    <Repeat className="mr-1 size-3" />
+                    {recurrenceText}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Tarefa recorrente: Recria automaticamente após conclusão
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge className={cn("text-xs", priorityColors[todo.priority])}>
+                  <Signal className="mr-1 size-3" />
+                  {priorityLabels[todo.priority]}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Prioridade: {priorityLabels[todo.priority]}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {category && (
             <TooltipProvider>
@@ -277,28 +307,20 @@ export function TodoItem({
             </TooltipProvider>
           )}
 
-          {recurrenceText && (
-            <TooltipProvider>
+          {todo.tags.map((tag) => (
+            <TooltipProvider key={tag}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge className="text-xs" variant="secondary">
-                    <Repeat className="mr-1 size-3" />
-                    {recurrenceText}
+                  <Badge className="text-xs" key={tag} variant="outline">
+                    <Tag className="mr-1 size-3" />
+                    {tag}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    Tarefa recorrente: Recria automaticamente após conclusão
-                  </p>
+                  <p>Etiqueta: {tag}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-
-          {todo.tags.map((tag) => (
-            <Badge className="text-xs" key={tag} variant="outline">
-              {tag}
-            </Badge>
           ))}
         </div>
 

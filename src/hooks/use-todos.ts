@@ -54,10 +54,11 @@ export function useTodos() {
     emoji?: string,
     description?: string,
     categoryId?: string,
-    recurrence?: Todo["recurrence"]
+    recurrence?: Todo["recurrence"],
+    customId?: string
   ) => {
     const newTodo: Todo = {
-      id: crypto.randomUUID(),
+      id: customId ?? crypto.randomUUID(),
       text,
       completed: false,
       createdAt: new Date(),
@@ -71,6 +72,7 @@ export function useTodos() {
       recurrence,
     };
     setTodos((prev) => [newTodo, ...prev]);
+    return newTodo.id;
   };
 
   const toggleTodo = (id: string) => {
