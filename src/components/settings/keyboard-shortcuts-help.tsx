@@ -1,4 +1,5 @@
-import { Keyboard } from "lucide-react";
+import { Command, Keyboard } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -6,17 +7,20 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface KeyboardShortcutsHelpProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const shortcuts = [
   {
-    keys: ["Ctrl", "N"],
+    keys: ["Ctrl", "K"],
     description: "Abrir modal de nova tarefa",
+  },
+  {
+    keys: ["Ctrl", "/"],
+    description: "Abrir painel de comandos",
   },
   {
     keys: ["/"],
@@ -32,12 +36,61 @@ const shortcuts = [
   },
 ];
 
+interface KeyboardShortcutsHelpProps {
+  setIsCreateDialogOpen: (open: boolean) => void;
+}
+
 export function KeyboardShortcutsHelp({
-  open,
-  onOpenChange,
+  setIsCreateDialogOpen,
 }: KeyboardShortcutsHelpProps) {
+  const [open, setOpen] = useState(false);
+
+  useKeyboardShortcuts([
+    {
+      key: "k",
+      ctrl: true,
+      description: "Nova tarefa",
+      action: () => setIsCreateDialogOpen(true),
+    },
+    {
+      key: "/",
+      description: "Buscar tarefas",
+      action: () => {
+        const searchInput = document.querySelector(
+          'input[placeholder*="Buscar"]'
+        ) as HTMLInputElement;
+        searchInput?.focus();
+      },
+    },
+    {
+      key: "/",
+      ctrl: true,
+      description: "Painel de comandos",
+      action: () => setOpen(true),
+    },
+    {
+      key: "?",
+      shift: true,
+      description: "Mostrar atalhos",
+      action: () => setOpen(true),
+    },
+  ]);
+
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
+    <Dialog onOpenChange={setOpen} open={open}>
+      <DialogTrigger asChild>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => setOpen(true)} size="icon" variant="outline">
+              <Command className="size-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Atalhos de Teclado (Ctrl+/)</p>
+          </TooltipContent>
+        </Tooltip>
+      </DialogTrigger>
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -49,7 +102,7 @@ export function KeyboardShortcutsHelp({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-4">
+        <div className="space-y-2">
           {shortcuts.map((shortcut) => (
             <div
               className="flex items-center justify-between rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"

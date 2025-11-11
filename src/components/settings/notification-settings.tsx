@@ -66,6 +66,7 @@ export function NotificationSettings({
           )}
         </Button>
       </DialogTrigger>
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Configurações de Notificações</DialogTitle>
@@ -74,7 +75,7 @@ export function NotificationSettings({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="notifications-toggle">
               {enabled ? "Notificações Ativadas" : "Notificações Desativadas"}

@@ -3,7 +3,6 @@ import { ptBR } from "date-fns/locale";
 import {
   Calendar,
   CheckCircle,
-  Command,
   GripVertical,
   HelpCircle,
   List,
@@ -14,7 +13,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarViewDraggable } from "@/components/calendar-view-draggable";
-import { KeyboardShortcutsHelp } from "@/components/settings/keyboard-shortcuts-help";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { TodoCreateDialog } from "@/components/todo/todo-create-dialog";
@@ -42,11 +40,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useConfetti } from "@/hooks/use-confetti";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useManualSort } from "@/hooks/use-manual-sort";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTodos } from "@/hooks/use-todos";
 import type { Filter, SortBy, SortDirection, Todo } from "@/types/todo";
+import { KeyboardShortcutsHelp } from "./components/settings/keyboard-shortcuts-help";
 
 function App() {
   const {
@@ -71,44 +69,11 @@ function App() {
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const notifications = useNotifications(todos);
   const manualSort = useManualSort();
   const { celebrate } = useConfetti();
-
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: "k",
-      ctrl: true,
-      description: "Nova tarefa",
-      action: () => setIsCreateDialogOpen(true),
-    },
-    {
-      key: "/",
-      description: "Buscar tarefas",
-      action: () => {
-        const searchInput = document.querySelector(
-          'input[placeholder*="Buscar"]'
-        ) as HTMLInputElement;
-        searchInput?.focus();
-      },
-    },
-    {
-      key: "/",
-      ctrl: true,
-      description: "Painel de comandos",
-      action: () => setIsShortcutsHelpOpen(true),
-    },
-    {
-      key: "?",
-      shift: true,
-      description: "Mostrar atalhos",
-      action: () => setIsShortcutsHelpOpen(true),
-    },
-  ]);
 
   const filteredAndSortedTodos = useMemo(() => {
     const filtered = filterTodos(filter, searchQuery);
@@ -300,20 +265,9 @@ function App() {
             </p>
           </div>
           <div className="flex flex-1 justify-end gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => setIsShortcutsHelpOpen(true)}
-                  size="icon"
-                  variant="outline"
-                >
-                  <Command className="size-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Atalhos de Teclado (Ctrl+/)</p>
-              </TooltipContent>
-            </Tooltip>
+            <KeyboardShortcutsHelp
+              setIsCreateDialogOpen={setIsCreateDialogOpen}
+            />
             <NotificationSettings
               enabled={notifications.settings.enabled}
               hasPermission={notifications.hasPermission}
@@ -467,12 +421,6 @@ function App() {
         onSave={handleUpdateTodo}
         open={isEditDialogOpen}
         todo={editingTodo}
-      />
-
-      {/* Keyboard Shortcuts Help */}
-      <KeyboardShortcutsHelp
-        onOpenChange={setIsShortcutsHelpOpen}
-        open={isShortcutsHelpOpen}
       />
 
       {/* Toaster */}
