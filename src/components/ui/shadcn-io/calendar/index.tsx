@@ -463,14 +463,17 @@ export type CalendarItemProps = {
 
 export const CalendarItem = memo(
   ({ feature, className }: CalendarItemProps) => (
-    <div className={cn("flex items-center gap-2", className)}>
-      <div
-        className="h-2 w-2 shrink-0 rounded-full"
-        style={{
-          backgroundColor: feature.status.color,
-        }}
-      />
-      <span className="truncate">{feature.name}</span>
+    <div
+      className={cn(
+        "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs",
+        className
+      )}
+      style={{
+        backgroundColor: `${feature.status.color}15`, // 15 é ~8% de opacidade em hex
+        borderLeft: `3px solid ${feature.status.color}`,
+      }}
+    >
+      <span className="truncate font-medium">{feature.name}</span>
     </div>
   )
 );

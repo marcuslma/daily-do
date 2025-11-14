@@ -2,8 +2,11 @@ import {
   DndContext,
   type DragEndEvent,
   DragOverlay,
+  PointerSensor,
   useDraggable,
   useDroppable,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import { getDay, getDaysInMonth, isSameDay } from "date-fns";
 import { type ReactNode, useMemo, useState } from "react";
@@ -283,6 +286,15 @@ export function CalendarViewDraggable({
 }: CalendarViewDraggableProps) {
   const [activeFeature, setActiveFeature] = useState<Feature | null>(null);
 
+  // Configurar sensors com distância mínima para ativar drag
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Requer 8px de movimento para ativar o drag
+      },
+    })
+  );
+
   const features = useMemo(
     () =>
       todos
@@ -345,7 +357,11 @@ export function CalendarViewDraggable({
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
+    <DndContext
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+      sensors={sensors}
+    >
       <CalendarProvider
         className={cn(
           "rounded-lg border bg-card text-card-foreground shadow-sm",
