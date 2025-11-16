@@ -46,6 +46,7 @@ export type SortBy = "createdAt" | "dueDate" | "priority" | "text";
 export type SortDirection = "asc" | "desc";
 
 export interface TodoStats {
+  // Visão Geral
   total: number;
   completed: number;
   active: number;
@@ -55,5 +56,53 @@ export interface TodoStats {
     high: number;
     medium: number;
     low: number;
+  };
+
+  // Produtividade no Tempo
+  productivity: {
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+    streak: number;
+  };
+
+  // Gestão de Tempo
+  timeManagement: {
+    totalEstimatedMinutes: number;
+    completedMinutes: number;
+    pendingMinutes: number;
+    byPriority: {
+      high: number;
+      medium: number;
+      low: number;
+    };
+  };
+
+  // Categorias e Tags
+  categoriesAndTags: {
+    topCategories: Array<{
+      categoryId: string;
+      count: number;
+      completionRate: number;
+    }>;
+    uncategorized: number;
+    topTags: Array<{ tag: string; count: number }>;
+  };
+
+  // Prazos e Pontualidade
+  deadlines: {
+    dueToday: number;
+    dueTomorrow: number;
+    dueThisWeek: number;
+    onTimeRate: number;
+    averageDelayDays: number;
+  };
+
+  // Subtarefas
+  subtasks: {
+    total: number;
+    completed: number;
+    completionRate: number;
+    tasksWithIncompleteSubtasks: number;
   };
 }

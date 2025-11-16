@@ -1,4 +1,17 @@
-import { addDays, addMonths, isPast, isToday } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  differenceInDays,
+  endOfMonth,
+  endOfWeek,
+  isPast,
+  isSameDay,
+  isToday,
+  isTomorrow,
+  isWithinInterval,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { useMemo } from "react";
 import type {
   Filter,
@@ -256,6 +269,7 @@ export function useTodos() {
   };
 
   const stats: TodoStats = useMemo(() => {
+    const now = new Date();
     const total = todos.length;
     const completed = todos.filter((t) => t.completed).length;
     const active = total - completed;
@@ -277,6 +291,189 @@ export function useTodos() {
       low: todos.filter((t) => !t.completed && t.priority === "low").length,
     };
 
+    // Produtividade no Tempo
+    const completedToday = todos.filter(
+      (t) => t.completed && t.createdAt && isToday(new Date(t.createdAt))
+    ).length;
+
+    const weekStart = startOfWeek(now, { weekStartsOn: 0 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 0 });
+    const completedThisWeek = todos.filter(
+      (t) =>
+        t.completed &&
+        t.createdAt &&
+        isWithinInterval(new Date(t.createdAt), {
+          start: weekStart,
+          end: weekEnd,
+        })
+    ).length;
+
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+    const completedThisMonth = todos.filter(
+      (t) =>
+        t.completed &&
+        t.createdAt &&
+        isWithinInterval(new Date(t.createdAt), {
+          start: monthStart,
+          end: monthEnd,
+        })
+    ).length;
+
+    // Calculate streak (consecutive days with completed tasks)
+    let streak = 0;
+    let checkDate = new Date(now);
+    const completedDates = new Set(
+      todos
+        .filter((t) => t.completed && t.createdAt)
+        .map((t) => new Date(t.createdAt).toDateString())
+    );
+
+    while (completedDates.has(checkDate.toDateString())) {
+      streak += 1;
+      checkDate = addDays(checkDate, -1);
+    }
+
+    // Gestão de Tempo
+    const calculateMinutes = (startTime?: Date, endTime?: Date): number => {
+      if (!(startTime && endTime)) {
+        return 0;
+      }
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      return Math.max(
+        0,
+        Math.floor((end.getTime() - start.getTime()) / 60_000)
+      );
+    };
+
+    const totalEstimatedMinutes = todos.reduce(
+      (sum, t) => sum + calculateMinutes(t.startTime, t.endTime),
+      0
+    );
+
+    const completedMinutes = todos
+      .filter((t) => t.completed)
+      .reduce((sum, t) => sum + calculateMinutes(t.startTime, t.endTime), 0);
+
+    const pendingMinutes = todos
+      .filter((t) => !t.completed)
+      .reduce((sum, t) => sum + calculateMinutes(t.startTime, t.endTime), 0);
+
+    const timeByPriority = {
+      high: todos
+        .filter((t) => !t.completed && t.priority === "high")
+        .reduce((sum, t) => sum + calculateMinutes(t.startTime, t.endTime), 0),
+      medium: todos
+        .filter((t) => !t.completed && t.priority === "medium")
+        .reduce((sum, t) => sum + calculateMinutes(t.startTime, t.endTime), 0),
+      low: todos
+        .filter((t) => !t.completed && t.priority === "low")
+        .reduce((sum, t) => sum + calculateMinutes(t.startTime, t.endTime), 0),
+    };
+
+    // Categorias e Tags
+    const categoryMap = new Map<string, { count: number; completed: number }>();
+
+    for (const todo of todos) {
+      if (todo.categoryId) {
+        const current = categoryMap.get(todo.categoryId) || {
+          count: 0,
+          completed: 0,
+        };
+        categoryMap.set(todo.categoryId, {
+          count: current.count + 1,
+          completed: current.completed + (todo.completed ? 1 : 0),
+        });
+      }
+    }
+
+    const topCategories = Array.from(categoryMap.entries())
+      .map(([categoryId, data]) => ({
+        categoryId,
+        count: data.count,
+        completionRate: (data.completed / data.count) * 100,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const uncategorized = todos.filter((t) => !t.categoryId).length;
+
+    const tagMap = new Map<string, number>();
+    for (const todo of todos) {
+      for (const tag of todo.tags) {
+        tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+      }
+    }
+
+    const topTags = Array.from(tagMap.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Prazos e Pontualidade
+    const dueToday = todos.filter(
+      (t) => !t.completed && t.dueDate && isToday(new Date(t.dueDate))
+    ).length;
+
+    const dueTomorrow = todos.filter(
+      (t) => !t.completed && t.dueDate && isTomorrow(new Date(t.dueDate))
+    ).length;
+
+    const dueThisWeek = todos.filter(
+      (t) =>
+        !t.completed &&
+        t.dueDate &&
+        isWithinInterval(new Date(t.dueDate), { start: now, end: weekEnd }) &&
+        !isToday(new Date(t.dueDate)) &&
+        !isTomorrow(new Date(t.dueDate))
+    ).length;
+
+    // Calculate on-time rate
+    const completedWithDueDate = todos.filter(
+      (t) => t.completed && t.dueDate && t.createdAt
+    );
+
+    const completedOnTime = completedWithDueDate.filter((t) => {
+      const dueDate = new Date(t.dueDate!);
+      const completedDate = new Date(t.createdAt);
+      return (
+        completedDate <= dueDate ||
+        isSameDay(completedDate, dueDate) ||
+        isToday(dueDate)
+      );
+    }).length;
+
+    const onTimeRate =
+      completedWithDueDate.length > 0
+        ? (completedOnTime / completedWithDueDate.length) * 100
+        : 100;
+
+    // Calculate average delay
+    const delays = completedWithDueDate
+      .map((t) => {
+        const dueDate = new Date(t.dueDate!);
+        const completedDate = new Date(t.createdAt);
+        return Math.max(0, differenceInDays(completedDate, dueDate));
+      })
+      .filter((delay) => delay > 0);
+
+    const averageDelayDays =
+      delays.length > 0
+        ? delays.reduce((sum, delay) => sum + delay, 0) / delays.length
+        : 0;
+
+    // Subtarefas
+    const allSubtasks = todos.flatMap((t) => t.subTasks);
+    const totalSubtasks = allSubtasks.length;
+    const completedSubtasks = allSubtasks.filter((st) => st.completed).length;
+    const subtaskCompletionRate =
+      totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+
+    const tasksWithIncompleteSubtasks = todos.filter(
+      (t) => t.subTasks.length > 0 && t.subTasks.some((st) => !st.completed)
+    ).length;
+
     return {
       total,
       completed,
@@ -284,6 +481,36 @@ export function useTodos() {
       overdue,
       completionRate,
       byPriority,
+      productivity: {
+        today: completedToday,
+        thisWeek: completedThisWeek,
+        thisMonth: completedThisMonth,
+        streak,
+      },
+      timeManagement: {
+        totalEstimatedMinutes,
+        completedMinutes,
+        pendingMinutes,
+        byPriority: timeByPriority,
+      },
+      categoriesAndTags: {
+        topCategories,
+        uncategorized,
+        topTags,
+      },
+      deadlines: {
+        dueToday,
+        dueTomorrow,
+        dueThisWeek,
+        onTimeRate,
+        averageDelayDays,
+      },
+      subtasks: {
+        total: totalSubtasks,
+        completed: completedSubtasks,
+        completionRate: subtaskCompletionRate,
+        tasksWithIncompleteSubtasks,
+      },
     };
   }, [todos]);
 

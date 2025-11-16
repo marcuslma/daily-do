@@ -1,11 +1,13 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
+  BarChart3,
   Calendar,
   CheckCircle,
   GripVertical,
   HelpCircle,
   List,
+  ListTodo,
   MoreVertical,
   Plus,
   Trash,
@@ -21,7 +23,7 @@ import { TodoFilters } from "@/components/todo/todo-filters";
 import { TodoImportExport } from "@/components/todo/todo-import-export";
 import { TodoList } from "@/components/todo/todo-list";
 import { TodoSort } from "@/components/todo/todo-sort";
-import { TodoStats } from "@/components/todo/todo-stats";
+import { TodoStatsImproved } from "@/components/todo/todo-stats-improved";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -33,12 +35,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toggle } from "@/components/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCategories } from "@/hooks/use-categories";
 import { useConfetti } from "@/hooks/use-confetti";
 import { useManualSort } from "@/hooks/use-manual-sort";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -62,6 +66,7 @@ function App() {
     deleteSubTask,
     stats,
   } = useTodos();
+  const { categories } = useCategories();
   const [filter, setFilter] = useState<Filter>("active");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("createdAt");
@@ -285,126 +290,146 @@ function App() {
           </div>
         </div>
 
-        {/* Stats */}
-        <TodoStats stats={stats} />
+        {/* Main Tabs */}
+        <Tabs defaultValue="tasks">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger className="gap-2" value="tasks">
+              <ListTodo className="size-4" />
+              Minhas Tarefas
+            </TabsTrigger>
+            <TabsTrigger className="gap-2" value="stats">
+              <BarChart3 className="size-4" />
+              Estatísticas
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Filters and List */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Minhas Tarefas</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
-                <Plus className="size-4" />
-                Nova Tarefa
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost">
-                    <MoreVertical className="size-4" />
+          {/* Tasks Tab */}
+          <TabsContent className="mt-6" value="tasks">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Minhas Tarefas</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
+                    <Plus className="size-4" />
+                    Nova Tarefa
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      setViewMode(viewMode === "list" ? "calendar" : "list")
-                    }
-                  >
-                    {viewMode === "list" ? (
-                      <>
-                        <Calendar className="mr-2 size-4" />
-                        Visualização em Calendário
-                      </>
-                    ) : (
-                      <>
-                        <List className="mr-2 size-4" />
-                        Visualização em Lista
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                  {stats.completed > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost">
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Ações</DropdownMenuLabel>
                       <DropdownMenuItem
-                        onClick={handleClearCompleted}
-                        variant="destructive"
+                        onClick={() =>
+                          setViewMode(viewMode === "list" ? "calendar" : "list")
+                        }
                       >
-                        <Trash className="mr-2 size-4" />
-                        Limpar Concluídas
+                        {viewMode === "list" ? (
+                          <>
+                            <Calendar className="mr-2 size-4" />
+                            Visualização em Calendário
+                          </>
+                        ) : (
+                          <>
+                            <List className="mr-2 size-4" />
+                            Visualização em Lista
+                          </>
+                        )}
                       </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {viewMode === "list" ? (
-              <>
-                <TodoFilters
-                  activeCount={stats.active}
-                  completedCount={stats.completed}
-                  filter={filter}
-                  onFilterChange={setFilter}
-                  onSearchChange={setSearchQuery}
-                  overdueCount={stats.overdue}
-                  searchQuery={searchQuery}
-                />
-                <div className="flex items-center justify-between gap-4">
-                  <TodoSort
-                    direction={sortDirection}
-                    onDirectionChange={() =>
-                      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-                    }
-                    onSortChange={setSortBy}
-                    sortBy={sortBy}
-                  />
-                  <div className="flex flex-row items-center gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="size-4 cursor-help text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {manualSort.enabled
-                            ? "Arraste tarefas para reorganizá-las"
-                            : "Ativar ordenação manual por arrastar e soltar"}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Toggle
-                      aria-label="Ordenação Manual"
-                      onPressedChange={handleToggleManualSort}
-                      pressed={manualSort.enabled}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <GripVertical className="size-4" />
-                      Ordenação Manual
-                    </Toggle>
-                  </div>
+                      {stats.completed > 0 && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={handleClearCompleted}
+                            variant="destructive"
+                          >
+                            <Trash className="mr-2 size-4" />
+                            Limpar Concluídas
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <TodoList
-                  manualSortEnabled={manualSort.enabled}
-                  onAddSubTask={addSubTask}
-                  onDelete={handleDeleteTodo}
-                  onDeleteSubTask={deleteSubTask}
-                  onEdit={handleEditTodo}
-                  onReorder={handleReorder}
-                  onToggle={handleToggleTodo}
-                  onToggleSubTask={toggleSubTask}
-                  todos={filteredAndSortedTodos}
-                />
-              </>
-            ) : (
-              <CalendarViewDraggable
-                onTodoClick={handleEditTodo}
-                onTodoDateChange={handleTodoDateChange}
-                todos={filteredAndSortedTodos}
-              />
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {viewMode === "list" ? (
+                  <>
+                    <TodoFilters
+                      activeCount={stats.active}
+                      completedCount={stats.completed}
+                      filter={filter}
+                      onFilterChange={setFilter}
+                      onSearchChange={setSearchQuery}
+                      overdueCount={stats.overdue}
+                      searchQuery={searchQuery}
+                    />
+                    <div className="flex items-center justify-between gap-4">
+                      <TodoSort
+                        direction={sortDirection}
+                        onDirectionChange={() =>
+                          setSortDirection(
+                            sortDirection === "asc" ? "desc" : "asc"
+                          )
+                        }
+                        onSortChange={setSortBy}
+                        sortBy={sortBy}
+                      />
+                      <div className="flex flex-row items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="size-4 cursor-help text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {manualSort.enabled
+                                ? "Arraste tarefas para reorganizá-las"
+                                : "Ativar ordenação manual por arrastar e soltar"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Toggle
+                          aria-label="Ordenação Manual"
+                          onPressedChange={handleToggleManualSort}
+                          pressed={manualSort.enabled}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <GripVertical className="size-4" />
+                          Ordenação Manual
+                        </Toggle>
+                      </div>
+                    </div>
+                    <TodoList
+                      manualSortEnabled={manualSort.enabled}
+                      onAddSubTask={addSubTask}
+                      onDelete={handleDeleteTodo}
+                      onDeleteSubTask={deleteSubTask}
+                      onEdit={handleEditTodo}
+                      onReorder={handleReorder}
+                      onToggle={handleToggleTodo}
+                      onToggleSubTask={toggleSubTask}
+                      todos={filteredAndSortedTodos}
+                    />
+                  </>
+                ) : (
+                  <CalendarViewDraggable
+                    onTodoClick={handleEditTodo}
+                    onTodoDateChange={handleTodoDateChange}
+                    todos={filteredAndSortedTodos}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Stats Tab */}
+          <TabsContent className="mt-6" value="stats">
+            <TodoStatsImproved categories={categories} stats={stats} />
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <p className="text-center text-muted-foreground text-xs">
