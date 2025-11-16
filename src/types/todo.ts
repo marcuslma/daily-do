@@ -38,7 +38,7 @@ export interface Todo {
   recurrence?: RecurrenceConfig;
 }
 
-export type Filter = "all" | "active" | "completed" | "overdue";
+export type Filter = "active" | "completed" | "overdue";
 
 export type SortBy = "createdAt" | "dueDate" | "priority" | "text";
 export type SortDirection = "asc" | "desc";

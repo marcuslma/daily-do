@@ -1,6 +1,6 @@
-import { HelpCircle, ListFilter, Search } from "lucide-react";
+import { HelpCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -90,31 +90,22 @@ export function TodoFilters({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <ListFilter className="size-4 text-muted-foreground" />
-        <ToggleGroup
-          className="flex-1"
-          onValueChange={(value) => value && onFilterChange(value as Filter)}
-          size="sm"
-          spacing={0}
-          type="single"
-          value={filter}
-          variant="outline"
-        >
-          <ToggleGroupItem className="flex-1" value="all">
-            Todas ({activeCount + completedCount})
-          </ToggleGroupItem>
-          <ToggleGroupItem className="flex-1" value="active">
+      <Tabs
+        onValueChange={(value) => onFilterChange(value as Filter)}
+        value={filter}
+      >
+        <TabsList className="w-full">
+          <TabsTrigger className="flex-1" value="active">
             Pendentes ({activeCount})
-          </ToggleGroupItem>
-          <ToggleGroupItem className="flex-1" value="overdue">
+          </TabsTrigger>
+          <TabsTrigger className="flex-1" value="overdue">
             Atrasadas ({overdueCount})
-          </ToggleGroupItem>
-          <ToggleGroupItem className="flex-1" value="completed">
+          </TabsTrigger>
+          <TabsTrigger className="flex-1" value="completed">
             Concluídas ({completedCount})
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   );
 }

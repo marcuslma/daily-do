@@ -62,7 +62,7 @@ function App() {
     deleteSubTask,
     stats,
   } = useTodos();
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("active");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");

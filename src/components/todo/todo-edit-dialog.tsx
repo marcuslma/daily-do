@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useCategories } from "@/hooks/use-categories";
@@ -193,292 +193,312 @@ export function TodoEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="text">Descrição</Label>
-            <div className="flex gap-2">
-              <Popover onOpenChange={setEmojiPickerOpen} open={emojiPickerOpen}>
-                <PopoverTrigger asChild>
+        <Tabs className="py-4" defaultValue="general">
+          <TabsList className="w-full">
+            <TabsTrigger className="flex-1" value="general">
+              Geral
+            </TabsTrigger>
+            <TabsTrigger className="flex-1" value="organization">
+              Organização
+            </TabsTrigger>
+            <TabsTrigger className="flex-1" value="recurrence">
+              Recorrência
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent className="mt-4 space-y-4" value="general">
+            <div className="space-y-2">
+              <Label htmlFor="text">Descrição</Label>
+              <div className="flex gap-2">
+                <Popover
+                  onOpenChange={setEmojiPickerOpen}
+                  open={emojiPickerOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      className="shrink-0"
+                      size="icon"
+                      type="button"
+                      variant="outline"
+                    >
+                      {emoji || <Smile className="size-4" />}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-auto p-0">
+                    <EmojiPicker
+                      emojiStyle={EmojiStyle.NATIVE}
+                      onEmojiClick={handleEmojiSelect}
+                      previewConfig={{ showPreview: false }}
+                      searchPlaceHolder="Buscar emoji..."
+                      theme={getEffectiveTheme()}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Input
+                  className="flex-1"
+                  id="text"
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Descrição da tarefa"
+                  value={text}
+                />
+                {emoji && (
                   <Button
                     className="shrink-0"
+                    onClick={() => setEmoji(undefined)}
                     size="icon"
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                   >
-                    {emoji || <Smile className="size-4" />}
+                    <X className="size-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0">
-                  <EmojiPicker
-                    emojiStyle={EmojiStyle.NATIVE}
-                    onEmojiClick={handleEmojiSelect}
-                    previewConfig={{ showPreview: false }}
-                    searchPlaceHolder="Buscar emoji..."
-                    theme={getEffectiveTheme()}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Input
-                className="flex-1"
-                id="text"
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Descrição da tarefa"
-                value={text}
-              />
-              {emoji && (
-                <Button
-                  className="shrink-0"
-                  onClick={() => setEmoji(undefined)}
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                >
-                  <X className="size-4" />
-                </Button>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Prioridade</Label>
-            <ToggleGroup
-              onValueChange={(value) => value && setPriority(value as Priority)}
-              spacing={0}
-              type="single"
-              value={priority}
-              variant="outline"
-            >
-              <ToggleGroupItem value="low">Baixa</ToggleGroupItem>
-              <ToggleGroupItem value="medium">Média</ToggleGroupItem>
-              <ToggleGroupItem value="high">Alta</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+            <div className="space-y-2">
+              <Label>Prioridade</Label>
+              <ToggleGroup
+                onValueChange={(value) =>
+                  value && setPriority(value as Priority)
+                }
+                spacing={0}
+                type="single"
+                value={priority}
+                variant="outline"
+              >
+                <ToggleGroupItem value="low">Baixa</ToggleGroupItem>
+                <ToggleGroupItem value="medium">Média</ToggleGroupItem>
+                <ToggleGroupItem value="high">Alta</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Data de Vencimento</Label>
-            <DatePicker
-              className="w-full"
-              date={dueDate}
-              onDateChange={setDueDate}
-              placeholder="Selecione uma data"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label>Data de Vencimento</Label>
+              <DatePicker
+                className="w-full"
+                date={dueDate}
+                onDateChange={setDueDate}
+                placeholder="Selecione uma data"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              className="min-h-20"
-              id="description"
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Adicione detalhes sobre esta tarefa..."
-              value={description}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Detalhes</Label>
+              <Textarea
+                className="min-h-20"
+                id="description"
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Adicione detalhes sobre esta tarefa..."
+                value={description}
+              />
+            </div>
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Categoria</Label>
-            <Select
-              onValueChange={(value) =>
-                setCategoryId(value === "none" ? "" : value)
-              }
-              value={categoryId || "none"}
-            >
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sem categoria</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <span className="flex items-center gap-2">
-                      {category.icon && <span>{category.icon}</span>}
-                      <span>{category.name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <TabsContent className="mt-4 space-y-4" value="organization">
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Select
+                onValueChange={(value) =>
+                  setCategoryId(value === "none" ? "" : value)
+                }
+                value={categoryId || "none"}
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem categoria</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <span className="flex items-center gap-2">
+                        {category.icon && <span>{category.icon}</span>}
+                        <span>{category.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <Separator />
-
-          <div className="space-y-2">
-            <Label htmlFor="recurrence-type">Recorrência</Label>
-            <Select
-              onValueChange={(value) =>
-                setRecurrenceType(value as RecurrenceConfig["type"])
-              }
-              value={recurrenceType}
-            >
-              <SelectTrigger id="recurrence-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Não repetir</SelectItem>
-                <SelectItem value="daily">Diariamente</SelectItem>
-                <SelectItem value="weekly">Semanalmente</SelectItem>
-                <SelectItem value="monthly">Mensalmente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {recurrenceType !== "none" && (
-            <>
-              {(recurrenceType === "daily" || recurrenceType === "monthly") && (
-                <div className="space-y-2">
-                  <Label htmlFor="interval">
-                    A cada {recurrenceType === "daily" && "dia(s)"}
-                    {recurrenceType === "monthly" && "mês(es)"}
-                  </Label>
+            <div className="space-y-2">
+              <Label htmlFor="tag-input">Etiquetas</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
                   <Input
-                    id="interval"
-                    min={1}
-                    onChange={(e) => {
-                      const val = Number.parseInt(e.target.value, 10);
-                      setRecurrenceInterval(Number.isNaN(val) ? 1 : val);
-                    }}
-                    type="number"
-                    value={recurrenceInterval.toString()}
+                    className="pr-8"
+                    id="tag-input"
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagInputKeyDown}
+                    placeholder="Adicionar etiqueta..."
+                    value={tagInput}
                   />
+                  <Tag className="-translate-y-1/2 absolute top-1/2 right-2 size-4 text-muted-foreground" />
                 </div>
-              )}
+                <Button onClick={addTag} type="button" variant="outline">
+                  <Plus className="size-4" />
+                </Button>
+              </div>
 
-              {recurrenceType === "weekly" && (
-                <div className="space-y-2">
-                  <Label>Dias da semana</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: "Dom", value: 0 },
-                      { label: "Seg", value: 1 },
-                      { label: "Ter", value: 2 },
-                      { label: "Qua", value: 3 },
-                      { label: "Qui", value: 4 },
-                      { label: "Sex", value: 5 },
-                      { label: "Sáb", value: 6 },
-                    ].map((day) => (
-                      <Button
-                        key={day.value}
-                        onClick={() => {
-                          if (recurrenceDays.includes(day.value)) {
-                            setRecurrenceDays(
-                              recurrenceDays.filter((d) => d !== day.value)
-                            );
-                          } else {
-                            setRecurrenceDays([...recurrenceDays, day.value]);
-                          }
-                        }}
-                        size="sm"
+              {tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {tags.map((tag) => (
+                    <Badge className="gap-1" key={tag} variant="secondary">
+                      {tag}
+                      <button
+                        className="hover:text-destructive"
+                        onClick={() => removeTag(tag)}
                         type="button"
-                        variant={
-                          recurrenceDays.includes(day.value)
-                            ? "default"
-                            : "outline"
-                        }
                       >
-                        {day.label}
-                      </Button>
-                    ))}
-                  </div>
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
               )}
+            </div>
 
-              <div className="rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
-                <Info className="mr-2 inline-block size-4" /> A tarefa será
-                automaticamente recriada quando você marcá-la como concluída.
-              </div>
-            </>
-          )}
-
-          <Separator />
-
-          <div className="space-y-2">
-            <Label htmlFor="tag-input">Etiquetas</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
+            <div className="space-y-2">
+              <Label htmlFor="subtask-input">Subtarefas</Label>
+              <div className="flex gap-2">
                 <Input
-                  className="pr-8"
-                  id="tag-input"
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagInputKeyDown}
-                  placeholder="Adicionar etiqueta..."
-                  value={tagInput}
+                  className="flex-1"
+                  id="subtask-input"
+                  onChange={(e) => setSubTaskInput(e.target.value)}
+                  onKeyDown={handleSubTaskInputKeyDown}
+                  placeholder="Adicionar subtarefa..."
+                  value={subTaskInput}
                 />
-                <Tag className="-translate-y-1/2 absolute top-1/2 right-2 size-4 text-muted-foreground" />
+                <Button onClick={addSubTask} type="button" variant="outline">
+                  <Plus className="size-4" />
+                </Button>
               </div>
-              <Button onClick={addTag} type="button" variant="outline">
-                <Plus className="size-4" />
-              </Button>
-            </div>
 
-            {tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <Badge className="gap-1" key={tag} variant="secondary">
-                    {tag}
-                    <button
-                      className="hover:text-destructive"
-                      onClick={() => removeTag(tag)}
-                      type="button"
+              {subTasks.length > 0 && (
+                <div className="mt-2 space-y-1.5 pl-2">
+                  {subTasks.map((subTask) => (
+                    <div
+                      className="group flex items-center gap-2"
+                      key={subTask.id}
                     >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+                      <Checkbox
+                        checked={subTask.completed}
+                        onCheckedChange={() => toggleSubTask(subTask.id)}
+                      />
+                      <span
+                        className={`flex-1 text-sm ${
+                          subTask.completed
+                            ? "text-muted-foreground line-through"
+                            : ""
+                        }`}
+                      >
+                        {subTask.text}
+                      </span>
+                      <Button
+                        className="text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                        onClick={() => removeSubTask(subTask.id)}
+                        size="icon-sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="subtask-input">Subtarefas</Label>
-            <div className="flex gap-2">
-              <Input
-                className="flex-1"
-                id="subtask-input"
-                onChange={(e) => setSubTaskInput(e.target.value)}
-                onKeyDown={handleSubTaskInputKeyDown}
-                placeholder="Adicionar subtarefa..."
-                value={subTaskInput}
-              />
-              <Button onClick={addSubTask} type="button" variant="outline">
-                <Plus className="size-4" />
-              </Button>
+          <TabsContent className="mt-4 space-y-4" value="recurrence">
+            <div className="space-y-2">
+              <Label htmlFor="recurrence-type">Tipo de Recorrência</Label>
+              <Select
+                onValueChange={(value) =>
+                  setRecurrenceType(value as RecurrenceConfig["type"])
+                }
+                value={recurrenceType}
+              >
+                <SelectTrigger id="recurrence-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não repetir</SelectItem>
+                  <SelectItem value="daily">Diariamente</SelectItem>
+                  <SelectItem value="weekly">Semanalmente</SelectItem>
+                  <SelectItem value="monthly">Mensalmente</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {subTasks.length > 0 && (
-              <div className="mt-2 space-y-1.5 pl-2">
-                {subTasks.map((subTask) => (
-                  <div
-                    className="group flex items-center gap-2"
-                    key={subTask.id}
-                  >
-                    <Checkbox
-                      checked={subTask.completed}
-                      onCheckedChange={() => toggleSubTask(subTask.id)}
+            {recurrenceType !== "none" && (
+              <>
+                {(recurrenceType === "daily" ||
+                  recurrenceType === "monthly") && (
+                  <div className="space-y-2">
+                    <Label htmlFor="interval">
+                      A cada {recurrenceType === "daily" && "dia(s)"}
+                      {recurrenceType === "monthly" && "mês(es)"}
+                    </Label>
+                    <Input
+                      id="interval"
+                      min={1}
+                      onChange={(e) => {
+                        const val = Number.parseInt(e.target.value, 10);
+                        setRecurrenceInterval(Number.isNaN(val) ? 1 : val);
+                      }}
+                      type="number"
+                      value={recurrenceInterval.toString()}
                     />
-                    <span
-                      className={`flex-1 text-sm ${
-                        subTask.completed
-                          ? "text-muted-foreground line-through"
-                          : ""
-                      }`}
-                    >
-                      {subTask.text}
-                    </span>
-                    <Button
-                      className="text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                      onClick={() => removeSubTask(subTask.id)}
-                      size="icon-sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <X className="size-3.5" />
-                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+
+                {recurrenceType === "weekly" && (
+                  <div className="space-y-2">
+                    <Label>Dias da semana</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "Dom", value: 0 },
+                        { label: "Seg", value: 1 },
+                        { label: "Ter", value: 2 },
+                        { label: "Qua", value: 3 },
+                        { label: "Qui", value: 4 },
+                        { label: "Sex", value: 5 },
+                        { label: "Sáb", value: 6 },
+                      ].map((day) => (
+                        <Button
+                          key={day.value}
+                          onClick={() => {
+                            if (recurrenceDays.includes(day.value)) {
+                              setRecurrenceDays(
+                                recurrenceDays.filter((d) => d !== day.value)
+                              );
+                            } else {
+                              setRecurrenceDays([...recurrenceDays, day.value]);
+                            }
+                          }}
+                          size="sm"
+                          type="button"
+                          variant={
+                            recurrenceDays.includes(day.value)
+                              ? "default"
+                              : "outline"
+                          }
+                        >
+                          {day.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-md bg-muted/50 p-3 text-muted-foreground text-sm">
+                  <Info className="mr-2 inline-block size-4" /> A tarefa será
+                  automaticamente recriada quando você marcá-la como concluída.
+                </div>
+              </>
             )}
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)} variant="outline">
