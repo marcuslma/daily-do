@@ -55,7 +55,9 @@ export function useTodos() {
     description?: string,
     categoryId?: string,
     recurrence?: Todo["recurrence"],
-    customId?: string
+    customId?: string,
+    startTime?: Date,
+    endTime?: Date
   ) => {
     const newTodo: Todo = {
       id: customId ?? crypto.randomUUID(),
@@ -65,6 +67,8 @@ export function useTodos() {
       priority,
       tags,
       dueDate,
+      startTime,
+      endTime,
       subTasks,
       emoji,
       description,

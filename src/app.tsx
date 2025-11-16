@@ -138,7 +138,9 @@ function App() {
     emoji?: string,
     description?: string,
     categoryId?: string,
-    recurrence?: import("@/types/todo").RecurrenceConfig
+    recurrence?: import("@/types/todo").RecurrenceConfig,
+    startTime?: Date,
+    endTime?: Date
   ) => {
     const newId = crypto.randomUUID();
     addTodo(
@@ -151,7 +153,9 @@ function App() {
       description,
       categoryId,
       recurrence,
-      newId
+      newId,
+      startTime,
+      endTime
     );
 
     // Always add to manual sort order at the top

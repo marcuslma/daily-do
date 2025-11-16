@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { TimePicker } from "@/components/ui/time-picker";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useCategories } from "@/hooks/use-categories";
 import type { Priority, RecurrenceConfig, SubTask } from "@/types/todo";
@@ -46,7 +47,9 @@ interface TodoCreateDialogProps {
     emoji?: string,
     description?: string,
     categoryId?: string,
-    recurrence?: RecurrenceConfig
+    recurrence?: RecurrenceConfig,
+    startTime?: Date,
+    endTime?: Date
   ) => void;
 }
 
@@ -72,6 +75,26 @@ export function TodoCreateDialog({
     useState<RecurrenceConfig["type"]>("none");
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  const [startTime, setStartTime] = useState<Date | undefined>();
+  const [endTime, setEndTime] = useState<Date | undefined>();
+
+  // Helper function to get default start/end times
+  const getDefaultTimes = () => {
+    const now = new Date();
+    const currentMinutes = now.getMinutes();
+    const currentHours = now.getHours();
+
+    // Round up to next hour
+    const startHours = currentMinutes > 0 ? currentHours + 1 : currentHours;
+
+    const defaultStart = new Date();
+    defaultStart.setHours(startHours, 0, 0, 0);
+
+    const defaultEnd = new Date();
+    defaultEnd.setHours(startHours + 1, 0, 0, 0);
+
+    return { defaultStart, defaultEnd };
+  };
 
   const resetForm = () => {
     setText("");
@@ -87,6 +110,11 @@ export function TodoCreateDialog({
     setRecurrenceType("none");
     setRecurrenceInterval(1);
     setRecurrenceDays([]);
+
+    // Set default times
+    const { defaultStart, defaultEnd } = getDefaultTimes();
+    setStartTime(defaultStart);
+    setEndTime(defaultEnd);
   };
 
   const handleSave = () => {
@@ -110,7 +138,9 @@ export function TodoCreateDialog({
         emoji,
         description || undefined,
         categoryId || undefined,
-        recurrence
+        recurrence,
+        startTime,
+        endTime
       );
       resetForm();
       onOpenChange(false);
@@ -287,6 +317,26 @@ export function TodoCreateDialog({
                 date={dueDate}
                 onDateChange={setDueDate}
                 placeholder="Selecione uma data"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Horário de Início</Label>
+              <TimePicker
+                className="w-full"
+                onTimeChange={setStartTime}
+                placeholder="Selecione o horário de início"
+                time={startTime}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Horário de Fim</Label>
+              <TimePicker
+                className="w-full"
+                onTimeChange={setEndTime}
+                placeholder="Selecione o horário de fim"
+                time={endTime}
               />
             </div>
 

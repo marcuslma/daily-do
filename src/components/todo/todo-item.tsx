@@ -153,16 +153,39 @@ export function TodoItem({
     let color = "text-muted-foreground";
     let Icon = CalendarClock;
 
+    // Add time information if available
+    if (todo.startTime && todo.endTime) {
+      const startTime = new Date(todo.startTime);
+      const endTime = new Date(todo.endTime);
+      const timeLabel = `das ${format(startTime, "HH:mm")} às ${format(endTime, "HH:mm")}`;
+      label = `${format(dueDate, "dd/MM/yyyy")} ${timeLabel}`;
+    } else if (todo.startTime) {
+      const startTime = new Date(todo.startTime);
+      label = `${format(dueDate, "dd/MM/yyyy")} às ${format(startTime, "HH:mm")}`;
+    }
+
     if (isOverdue) {
-      label = `Venceu há ${Math.abs(daysUntilDue)} dia${Math.abs(daysUntilDue) !== 1 ? "s" : ""}`;
+      if (todo.startTime || todo.endTime) {
+        // Keep the formatted date with time for overdue tasks
+      } else {
+        label = `Venceu há ${Math.abs(daysUntilDue)} dia${Math.abs(daysUntilDue) !== 1 ? "s" : ""}`;
+      }
       color = "text-red-600 dark:text-red-400";
       Icon = AlertCircle;
     } else if (isDueToday) {
-      label = "Vence hoje";
+      if (todo.startTime || todo.endTime) {
+        // Keep the formatted date with time
+      } else {
+        label = "Vence hoje";
+      }
       color = "text-orange-600 dark:text-orange-400";
       Icon = AlertCircle;
     } else if (isDueTomorrow) {
-      label = "Vence amanhã";
+      if (todo.startTime || todo.endTime) {
+        // Keep the formatted date with time
+      } else {
+        label = "Vence amanhã";
+      }
       color = "text-yellow-600 dark:text-yellow-400";
     }
 

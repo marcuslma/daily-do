@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { TimePicker } from "@/components/ui/time-picker";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useCategories } from "@/hooks/use-categories";
 import type { Priority, RecurrenceConfig, SubTask, Todo } from "@/types/todo";
@@ -64,6 +65,8 @@ export function TodoEditDialog({
     useState<RecurrenceConfig["type"]>("none");
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  const [startTime, setStartTime] = useState<Date | undefined>();
+  const [endTime, setEndTime] = useState<Date | undefined>();
 
   useEffect(() => {
     if (todo) {
@@ -75,6 +78,8 @@ export function TodoEditDialog({
       setEmoji(todo.emoji);
       setDescription(todo.description || "");
       setCategoryId(todo.categoryId || "");
+      setStartTime(todo.startTime ? new Date(todo.startTime) : undefined);
+      setEndTime(todo.endTime ? new Date(todo.endTime) : undefined);
 
       if (todo.recurrence) {
         setRecurrenceType(todo.recurrence.type);
@@ -110,6 +115,8 @@ export function TodoEditDialog({
         description: description || undefined,
         categoryId: categoryId || undefined,
         recurrence,
+        startTime,
+        endTime,
       });
       onOpenChange(false);
     }
@@ -279,6 +286,26 @@ export function TodoEditDialog({
                 date={dueDate}
                 onDateChange={setDueDate}
                 placeholder="Selecione uma data"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Horário de Início</Label>
+              <TimePicker
+                className="w-full"
+                onTimeChange={setStartTime}
+                placeholder="Selecione o horário de início"
+                time={startTime}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Horário de Fim</Label>
+              <TimePicker
+                className="w-full"
+                onTimeChange={setEndTime}
+                placeholder="Selecione o horário de fim"
+                time={endTime}
               />
             </div>
 

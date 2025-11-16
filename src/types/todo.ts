@@ -31,6 +31,8 @@ export interface Todo {
   priority: Priority;
   tags: string[];
   dueDate?: Date;
+  startTime?: Date;
+  endTime?: Date;
   subTasks: SubTask[];
   emoji?: string;
   description?: string;
