@@ -209,7 +209,7 @@ export function TodoItem({
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="size-5" />
+          <GripVertical className="size-4" />
         </button>
       )}
 
@@ -389,7 +389,7 @@ export function TodoItem({
                     {subTask.text}
                   </span>
                   <Button
-                    className="size-5 text-muted-foreground hover:text-destructive"
+                    className="size-4 text-muted-foreground hover:text-destructive"
                     onClick={() => onDeleteSubTask?.(todo.id, subTask.id)}
                     size="icon"
                     variant="ghost"

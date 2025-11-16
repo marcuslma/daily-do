@@ -440,7 +440,7 @@ export function TodoEditDialog({
                 value={subTaskInput}
               />
               <Button onClick={addSubTask} type="button" variant="outline">
-                Adicionar
+                <Plus className="size-4" />
               </Button>
             </div>
 

@@ -82,7 +82,7 @@ export function KeyboardShortcutsHelp({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button onClick={() => setOpen(true)} size="icon" variant="outline">
-              <Command className="size-5" />
+              <Command className="size-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -94,7 +94,7 @@ export function KeyboardShortcutsHelp({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Keyboard className="size-5" />
+            <Keyboard className="size-4" />
             Atalhos de Teclado
           </DialogTitle>
           <DialogDescription>
