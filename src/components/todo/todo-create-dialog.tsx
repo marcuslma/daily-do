@@ -261,9 +261,14 @@ export function TodoCreateDialog({
                       {emoji || <Smile className="size-4" />}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="start" className="w-auto p-0">
+                  <PopoverContent
+                    align="start"
+                    className="w-auto p-0"
+                    onWheel={(e) => e.stopPropagation()}
+                  >
                     <EmojiPicker
                       emojiStyle={EmojiStyle.NATIVE}
+                      lazyLoadEmojis
                       onEmojiClick={handleEmojiSelect}
                       previewConfig={{ showPreview: false }}
                       searchPlaceHolder="Buscar emoji..."
