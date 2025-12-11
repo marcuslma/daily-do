@@ -141,7 +141,6 @@ const Combobox = ({
         <Command
           filter={(value, search) => {
             const label = data.find((item) => item.value === value)?.label;
-
             return label?.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
           }}
         >
