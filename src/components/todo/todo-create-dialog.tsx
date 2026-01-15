@@ -395,7 +395,7 @@ export function TodoCreateDialog({
                     placeholder="Adicionar etiqueta..."
                     value={tagInput}
                   />
-                  <Tag className="-translate-y-1/2 absolute top-1/2 right-2 size-4 text-muted-foreground" />
+                  <Tag className="absolute top-1/2 right-2 size-4 -translate-y-1/2 text-muted-foreground" />
                 </div>
                 <Button onClick={addTag} type="button" variant="outline">
                   <Plus className="size-4" />

@@ -36,7 +36,7 @@ export function TodoFilters({
           placeholder="Buscar tarefas... (ex: priority:high tag:trabalho)"
           value={searchQuery}
         />
-        <div className="-translate-y-1/2 absolute top-1/2 right-3 flex items-center gap-2">
+        <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <HelpCircle className="size-4 cursor-help text-muted-foreground" />
