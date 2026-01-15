@@ -1,7 +1,12 @@
 import confetti from "canvas-confetti";
+import { useCelebrationSound } from "./use-celebration-sound";
 
 export function useConfetti() {
+  const { playSuccessSound } = useCelebrationSound();
+
   const celebrate = () => {
+    // Play celebration sound
+    playSuccessSound();
     const count = 200;
     const defaults = {
       origin: { y: 0.7 },
