@@ -84,6 +84,7 @@ function App() {
   const {
     isVisible: gifVisible,
     gifUrl,
+    progress: gifProgress,
     showCelebrationGif,
     hideCelebrationGif,
   } = useCelebrationGif();
@@ -466,6 +467,7 @@ function App() {
         gifUrl={gifUrl}
         isVisible={gifVisible}
         onClose={hideCelebrationGif}
+        progress={gifProgress}
       />
 
       {/* Toaster */}
