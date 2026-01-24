@@ -1,5 +1,3 @@
-import { useCallback, useState } from "react";
-
 // Lista de 10 GIFs de celebração do Giphy
 const CELEBRATION_GIFS = [
   "https://media.giphy.com/media/g9582DNuQppxC/giphy.gif", // Confetti explosion
@@ -14,48 +12,7 @@ const CELEBRATION_GIFS = [
   "https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif", // Victory dance
 ];
 
-interface CelebrationGifState {
-  isVisible: boolean;
-  gifUrl: string;
-}
-
-export function useCelebrationGif() {
-  const [state, setState] = useState<CelebrationGifState>({
-    isVisible: false,
-    gifUrl: "",
-  });
-
-  const showCelebrationGif = useCallback(() => {
-    // Seleciona um GIF aleatório da lista
-    const randomIndex = Math.floor(Math.random() * CELEBRATION_GIFS.length);
-    const selectedGif = CELEBRATION_GIFS[randomIndex];
-
-    // Exibe o GIF
-    setState({
-      isVisible: true,
-      gifUrl: selectedGif,
-    });
-
-    // Esconde o GIF após 3 segundos
-    setTimeout(() => {
-      setState({
-        isVisible: false,
-        gifUrl: "",
-      });
-    }, 3000);
-  }, []);
-
-  const hideCelebrationGif = useCallback(() => {
-    setState({
-      isVisible: false,
-      gifUrl: "",
-    });
-  }, []);
-
-  return {
-    isVisible: state.isVisible,
-    gifUrl: state.gifUrl,
-    showCelebrationGif,
-    hideCelebrationGif,
-  };
+export function getRandomCelebrationGif(): string {
+  const randomIndex = Math.floor(Math.random() * CELEBRATION_GIFS.length);
+  return CELEBRATION_GIFS[randomIndex];
 }

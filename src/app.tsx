@@ -44,7 +44,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCategories } from "@/hooks/use-categories";
-import { useCelebrationGif } from "@/hooks/use-celebration-gif";
+import { getRandomCelebrationGif } from "@/hooks/use-celebration-gif";
 import { useConfetti } from "@/hooks/use-confetti";
 import { useManualSort } from "@/hooks/use-manual-sort";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -81,12 +81,6 @@ function App() {
   const notifications = useNotifications(todos);
   const manualSort = useManualSort();
   const { celebrate } = useConfetti();
-  const {
-    isVisible: gifVisible,
-    gifUrl,
-    showCelebrationGif,
-    hideCelebrationGif,
-  } = useCelebrationGif();
 
   const filteredAndSortedTodos = useMemo(() => {
     const filtered = filterTodos(filter, searchQuery);
@@ -191,9 +185,9 @@ function App() {
       } else {
         // Task is being completed
         celebrate();
-        showCelebrationGif();
-        toast.success("Tarefa concluída! 🎉", {
-          description: todo.text,
+        const randomGif = getRandomCelebrationGif();
+        toast(<CelebrationGif description={todo.text} gifUrl={randomGif} />, {
+          duration: 5000,
         });
       }
     }
@@ -459,13 +453,6 @@ function App() {
         onSave={handleUpdateTodo}
         open={isEditDialogOpen}
         todo={editingTodo}
-      />
-
-      {/* Celebration GIF */}
-      <CelebrationGif
-        gifUrl={gifUrl}
-        isVisible={gifVisible}
-        onClose={hideCelebrationGif}
       />
 
       {/* Toaster */}
