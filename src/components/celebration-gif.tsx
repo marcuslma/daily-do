@@ -5,15 +5,15 @@ interface CelebrationGifProps {
 
 export function CelebrationGif({ gifUrl, description }: CelebrationGifProps) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex flex-col gap-3">
       <img
         alt="Celebração"
-        className="h-16 w-16 rounded-md object-cover"
-        height="64"
+        className="aspect-square w-full rounded-md object-cover"
+        height="256"
         src={gifUrl}
-        width="64"
+        width="256"
       />
-      <div className="flex-1">
+      <div>
         <p className="font-medium">Tarefa concluída! 🎉</p>
         <p className="text-muted-foreground text-sm">{description}</p>
       </div>
