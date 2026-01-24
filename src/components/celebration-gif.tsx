@@ -1,12 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 
 interface CelebrationGifProps {
@@ -24,41 +18,26 @@ export function CelebrationGif({
 }: CelebrationGifProps) {
   return (
     <Dialog onOpenChange={(open) => !open && onClose?.()} open={isVisible}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Tarefa Concluída! 🎉</span>
-            <Button
-              aria-label="Fechar"
-              className="h-6 w-6"
-              onClick={onClose}
-              size="icon"
-              variant="ghost"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogTitle>
-          <DialogDescription>
-            Parabéns por completar sua tarefa!
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
+      <DialogContent className="max-w-md gap-0 p-0">
+        <div className="relative">
           <img
             alt="Celebração de conclusão de tarefa"
-            className="aspect-square w-full rounded-lg object-cover"
+            className="aspect-square w-full object-cover"
             height="400"
             src={gifUrl}
             width="400"
           />
-
-          <div className="space-y-2">
-            <Progress className="h-2" value={progress} />
-            <p className="text-center text-muted-foreground text-xs">
-              Fechando automaticamente em {Math.ceil((progress / 100) * 5)}s
-            </p>
-          </div>
+          <Button
+            aria-label="Fechar"
+            className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background"
+            onClick={onClose}
+            size="icon"
+            variant="ghost"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+        <Progress className="h-1 rounded-none" value={progress} />
       </DialogContent>
     </Dialog>
   );
