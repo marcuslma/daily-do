@@ -8,7 +8,14 @@ import { notFound } from "next/navigation";
 export async function NewTodoEditor() {
   await requireSession();
 
-  return <TodoForm action={createTodo} description="" submitLabel="Criar tarefa" />;
+  return (
+    <TodoForm
+      action={createTodo}
+      description=""
+      submitIcon="create"
+      submitLabel="Criar tarefa"
+    />
+  );
 }
 
 type EditTodoEditorProps = {
@@ -27,6 +34,7 @@ export async function EditTodoEditor({ todoId }: EditTodoEditorProps) {
     <TodoForm
       action={updateTodo.bind(null, todo.id)}
       description={todo.description}
+      submitIcon="save"
       submitLabel="Salvar alterações"
     />
   );

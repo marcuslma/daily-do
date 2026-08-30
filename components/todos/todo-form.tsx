@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Plus, Save } from "lucide-react";
 import { FormFeedback } from "@/components/auth/form-feedback";
 import { SubmitButton } from "@/components/auth/submit-button";
 import {
@@ -14,14 +15,21 @@ type TodoFormProps = {
     formData: FormData,
   ) => Promise<TodoActionState>;
   description: string;
+  submitIcon: "create" | "save";
   submitLabel: string;
 };
 
 const inputClassName =
   "mt-1 min-h-24 w-full resize-y rounded-none border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50";
 
-export function TodoForm({ action, description, submitLabel }: TodoFormProps) {
+export function TodoForm({
+  action,
+  description,
+  submitIcon,
+  submitLabel,
+}: TodoFormProps) {
   const [state, formAction] = useActionState(action, initialTodoActionState);
+  const SubmitIcon = submitIcon === "create" ? Plus : Save;
 
   return (
     <form action={formAction} className="space-y-4">
@@ -47,7 +55,12 @@ export function TodoForm({ action, description, submitLabel }: TodoFormProps) {
         </div>
       </div>
       <FormFeedback message={state.message} />
-      <SubmitButton pendingLabel="Salvando...">{submitLabel}</SubmitButton>
+      <SubmitButton pendingLabel="Salvando...">
+        <span className="inline-flex items-center gap-1.5">
+          <SubmitIcon aria-hidden="true" size={14} strokeWidth={2} />
+          {submitLabel}
+        </span>
+      </SubmitButton>
     </form>
   );
 }

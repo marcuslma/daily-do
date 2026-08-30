@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Pencil, Trash2 } from "lucide-react";
 import { deleteTodo } from "@/app/actions/todos";
 import { TodoCheckbox } from "@/components/todos/todo-checkbox";
 import type { TodoDay } from "@/lib/todos";
@@ -26,7 +27,7 @@ export function TodoList({ currentDay, days }: TodoListProps) {
             className="space-y-2"
             key={todoDay.date}
           >
-            <header className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2 group-data-[theme=dark]:border-slate-800">
+            <header className="flex flex-col items-start gap-1 border-b border-slate-200 pb-2 group-data-[theme=dark]:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <h2
                 className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-950 group-data-[theme=dark]:text-slate-50"
                 id={"todo-day-" + todoDay.date}
@@ -48,7 +49,7 @@ export function TodoList({ currentDay, days }: TodoListProps) {
 
                   return (
                     <li
-                      className="flex items-start gap-2 border border-slate-200 bg-white p-3 group-data-[theme=dark]:border-slate-800 group-data-[theme=dark]:bg-slate-900"
+                      className="flex flex-wrap items-start gap-2 border border-slate-200 bg-white p-3 group-data-[theme=dark]:border-slate-800 group-data-[theme=dark]:bg-slate-900 sm:flex-nowrap"
                       key={todo.id}
                     >
                       {isCurrentDay ? (
@@ -90,21 +91,23 @@ export function TodoList({ currentDay, days }: TodoListProps) {
                         </p>
                       </div>
                       {isCurrentDay ? (
-                        <div className="flex shrink-0 items-center gap-2">
+                        <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto sm:justify-start">
                           <Link
                             aria-label={"Editar: " + todo.description}
-                            className="inline-flex h-8 items-center rounded-none border border-slate-300 px-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
+                            className="inline-flex size-8 items-center justify-center rounded-none border border-slate-300 text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
                             href={"/dashboard/todos/" + todo.id + "/edit"}
+                            title="Editar tarefa"
                           >
-                            Editar
+                            <Pencil aria-hidden="true" size={14} strokeWidth={2} />
                           </Link>
                           <form action={deleteTodo.bind(null, todo.id)}>
                             <button
                               aria-label={"Excluir: " + todo.description}
-                              className="inline-flex h-8 items-center rounded-none border border-rose-300 px-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 group-data-[theme=dark]:border-rose-900 group-data-[theme=dark]:text-rose-300 group-data-[theme=dark]:hover:bg-rose-950/30 group-data-[theme=dark]:focus-visible:outline-rose-300"
+                              className="inline-flex size-8 items-center justify-center rounded-none border border-rose-300 text-rose-700 transition hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 group-data-[theme=dark]:border-rose-900 group-data-[theme=dark]:text-rose-300 group-data-[theme=dark]:hover:bg-rose-950/30 group-data-[theme=dark]:focus-visible:outline-rose-300"
+                              title="Excluir tarefa"
                               type="submit"
                             >
-                              Excluir
+                              <Trash2 aria-hidden="true" size={14} strokeWidth={2} />
                             </button>
                           </form>
                         </div>

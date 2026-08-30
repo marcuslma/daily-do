@@ -17,6 +17,22 @@ function getCloseButton(): HTMLButtonElement {
 }
 
 describe("TodoModal", () => {
+  it("keeps the dialog reachable in a small viewport", () => {
+    render(
+      <TodoModal title="Nova tarefa">
+        <button type="button">Salvar tarefa</button>
+      </TodoModal>,
+    );
+
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog.parentElement).toHaveClass("items-end", "sm:items-center");
+    expect(dialog).toHaveClass(
+      "max-h-[calc(100dvh-1.5rem)]",
+      "overflow-y-auto",
+    );
+  });
+
   it("moves focus into the dialog and keeps tab navigation inside it", () => {
     render(
       <TodoModal title="Nova tarefa">

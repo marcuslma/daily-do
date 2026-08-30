@@ -63,7 +63,7 @@ export function TodoModal({ children, title }: TodoModalProps) {
   }, [router]);
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-20 flex items-end justify-center p-3 sm:items-center sm:p-4">
       <div
         aria-hidden="true"
         className="absolute inset-0 cursor-default bg-slate-950/40"
@@ -72,7 +72,7 @@ export function TodoModal({ children, title }: TodoModalProps) {
       <section
         aria-labelledby="todo-modal-title"
         aria-modal="true"
-        className="relative z-10 w-full max-w-lg border border-slate-200 bg-white p-4 group-data-[theme=dark]:border-slate-800 group-data-[theme=dark]:bg-slate-900"
+        className="relative z-10 max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto border border-slate-200 bg-white p-4 group-data-[theme=dark]:border-slate-800 group-data-[theme=dark]:bg-slate-900 sm:max-h-[calc(100dvh-2rem)]"
         ref={dialogRef}
         role="dialog"
       >

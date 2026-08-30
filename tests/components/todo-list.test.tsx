@@ -8,6 +8,91 @@ vi.mock("@/app/actions/todos", () => ({
 }));
 
 describe("TodoList", () => {
+  it("uses Lucide icons for the current todo edit and delete controls", () => {
+    render(
+      <TodoList
+        currentDay="2026-08-30"
+        days={[
+          {
+            date: "2026-08-30",
+            todos: [
+              {
+                id: "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d1",
+                description: "Comprar café",
+                todoDate: "2026-08-30",
+                originalCreatedAt: new Date("2026-08-28T12:00:00.000Z"),
+                carryoverCount: 0,
+                previousTodoId: null,
+                createdAt: new Date("2026-08-30T12:00:00.000Z"),
+                updatedAt: new Date("2026-08-30T12:00:00.000Z"),
+                completedAt: null,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole("link", { name: "Editar: Comprar café" })
+        .querySelector("svg.lucide-pencil"),
+    ).toBeInTheDocument();
+    expect(
+      screen
+        .getByRole("button", { name: "Excluir: Comprar café" })
+        .querySelector("svg.lucide-trash-2"),
+    ).toBeInTheDocument();
+  });
+
+  it("moves current todo controls below its content on small screens", () => {
+    render(
+      <TodoList
+        currentDay="2026-08-30"
+        days={[
+          {
+            date: "2026-08-30",
+            todos: [
+              {
+                id: "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d1",
+                description: "Comprar café",
+                todoDate: "2026-08-30",
+                originalCreatedAt: new Date("2026-08-28T12:00:00.000Z"),
+                carryoverCount: 0,
+                previousTodoId: null,
+                createdAt: new Date("2026-08-30T12:00:00.000Z"),
+                updatedAt: new Date("2026-08-30T12:00:00.000Z"),
+                completedAt: null,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    const todoItem = screen.getByText("Comprar café").closest("li");
+    const actionBar = screen
+      .getByRole("button", { name: "Excluir: Comprar café" })
+      .closest("form")?.parentElement;
+
+    expect(todoItem).toHaveClass("flex-wrap", "sm:flex-nowrap");
+    expect(actionBar).toHaveClass("w-full", "sm:w-auto", "justify-end");
+  });
+
+  it("stacks the day title and status on small screens", () => {
+    render(
+      <TodoList
+        currentDay="2026-08-30"
+        days={[{ date: "2026-08-30", todos: [] }]}
+      />,
+    );
+
+    expect(screen.getByText("Hoje").closest("header")).toHaveClass(
+      "flex-col",
+      "sm:flex-row",
+    );
+  });
+
   it("keeps historical occurrences readable without interactive controls", () => {
     render(
       <TodoList

@@ -86,6 +86,65 @@ describe("DashboardPage", () => {
     );
   });
 
+  it("shows a plus icon with the new task action", async () => {
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(
+      screen
+        .getByRole("link", { name: "Nova tarefa" })
+        .querySelector("svg.lucide-plus"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a logout icon with the sign-out action", async () => {
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(
+      screen
+        .getByRole("button", { name: "Sair" })
+        .querySelector("svg.lucide-log-out"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps dashboard actions fluid on small screens", async () => {
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    const newTodoLink = screen.getByRole("link", { name: "Nova tarefa" });
+    const signOutButton = screen.getByRole("button", { name: "Sair" });
+
+    expect(screen.getByText("Daily Do").closest("header")).toHaveClass(
+      "flex-col",
+      "sm:flex-row",
+    );
+    expect(screen.getByRole("main")).toHaveClass("pt-16", "sm:py-8");
+    expect(screen.getByText("Daily Do").parentElement).toHaveClass(
+      "w-full",
+      "sm:w-auto",
+    );
+    expect(newTodoLink.parentElement).toHaveClass("w-full", "sm:w-auto");
+    expect(newTodoLink).toHaveClass("flex-1", "sm:flex-none");
+    expect(signOutButton.closest("form")).toHaveClass(
+      "flex-1",
+      "sm:flex-none",
+    );
+    expect(signOutButton).toHaveClass("w-full");
+  });
+
   it("loads today plus two prior dates and exposes the next three-day link", async () => {
     render(
       await DashboardPage({

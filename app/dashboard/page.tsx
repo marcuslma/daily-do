@@ -1,5 +1,6 @@
 import { signOut } from "@/app/actions/auth";
 import { TodoList } from "@/components/todos/todo-list";
+import { LogOut, Plus } from "lucide-react";
 import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import {
@@ -32,29 +33,31 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   );
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8 text-slate-950 group-data-[theme=dark]:text-slate-50 sm:px-6">
-      <header className="flex items-center justify-between gap-4">
-        <div>
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-5 px-4 pb-6 pt-16 text-slate-950 group-data-[theme=dark]:text-slate-50 sm:gap-6 sm:px-6 sm:py-8">
+      <header className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0 w-full sm:w-auto">
           <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 group-data-[theme=dark]:text-slate-400">
             Daily Do
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+          <h1 className="mt-1 break-words text-xl font-semibold tracking-tight">
             Olá, {session.user.name}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <Link
-          className="inline-flex h-8 items-center rounded-none bg-slate-950 px-3 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:bg-slate-50 group-data-[theme=dark]:text-slate-950 group-data-[theme=dark]:hover:bg-slate-200 group-data-[theme=dark]:focus-visible:outline-slate-50"
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-none bg-slate-950 px-3 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:bg-slate-50 group-data-[theme=dark]:text-slate-950 group-data-[theme=dark]:hover:bg-slate-200 group-data-[theme=dark]:focus-visible:outline-slate-50 sm:flex-none"
             href="/dashboard/todos/new"
           >
-            Nova tarefa
+            <Plus aria-hidden="true" size={14} strokeWidth={2} />
+            <span>Nova tarefa</span>
           </Link>
-          <form action={signOut}>
+          <form action={signOut} className="flex-1 sm:flex-none">
             <button
-              className="h-8 rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
+              className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
               type="submit"
             >
-              Sair
+              <LogOut aria-hidden="true" size={14} strokeWidth={2} />
+              <span>Sair</span>
             </button>
           </form>
         </div>
@@ -62,7 +65,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       <TodoList currentDay={currentDay} days={groupTodosByDay(dates, todos)} />
       {visibleCount < maximum ? (
         <Link
-          className="inline-flex h-8 self-start items-center rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
+          className="inline-flex h-9 w-full items-center justify-center self-start rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50 sm:w-auto"
           href={"/dashboard?days=" + (visibleCount + DASHBOARD_DAY_INCREMENT)}
         >
           Carregar 3 dias anteriores
