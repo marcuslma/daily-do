@@ -19,4 +19,17 @@ describe("TodoPage", () => {
       "sm:items-center",
     );
   });
+
+  it("reserves space for the fixed theme control on small screens", () => {
+    render(
+      <TodoPage backHref="/dashboard" title="Nova tarefa">
+        <form>
+          <label htmlFor="description">Descrição</label>
+          <textarea id="description" />
+        </form>
+      </TodoPage>,
+    );
+
+    expect(screen.getByRole("main")).toHaveClass("pt-16", "sm:py-8");
+  });
 });
