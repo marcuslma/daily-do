@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 const testTimeZone = "America/Sao_Paulo";
 
 afterEach(() => {
+  delete process.env.DAILY_DO_TZ;
   process.env.TZ = testTimeZone;
 });
 
@@ -21,6 +22,14 @@ describe("timezone helpers", () => {
     const { getAppTimeZone } = await import("@/lib/timezone");
 
     expect(() => getAppTimeZone()).toThrow("Invalid timezone: Mars/Olympus");
+  });
+
+  it("prefers the dedicated application timezone over Vercel's runtime timezone", async () => {
+    process.env.TZ = ":UTC";
+    process.env.DAILY_DO_TZ = testTimeZone;
+    const { getAppTimeZone } = await import("@/lib/timezone");
+
+    expect(getAppTimeZone()).toBe(testTimeZone);
   });
 
   it("builds descending calendar days across a month boundary", async () => {

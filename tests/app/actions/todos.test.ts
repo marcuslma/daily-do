@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   createTodoForUser: vi.fn(),
   updateTodoForUser: vi.fn(),
   setTodoCompletionForUser: vi.fn(),
+  deleteTodoForUser: vi.fn(),
   getCurrentCalendarDay: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(() => {
@@ -30,6 +31,7 @@ vi.mock("@/lib/todos", () => ({
   createTodoForUser: mocks.createTodoForUser,
   updateTodoForUser: mocks.updateTodoForUser,
   setTodoCompletionForUser: mocks.setTodoCompletionForUser,
+  deleteTodoForUser: mocks.deleteTodoForUser,
 }));
 
 vi.mock("@/lib/timezone", () => ({
@@ -177,6 +179,34 @@ describe("todo Server Functions", () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
+  it("deletes an owned occurrence from the current day", async () => {
+    mocks.deleteTodoForUser.mockResolvedValue(todo);
+    const { deleteTodo } = await import("@/app/actions/todos");
+
+    await deleteTodo(todoId);
+
+    expect(mocks.deleteTodoForUser).toHaveBeenCalledWith(
+      "user_1",
+      todoId,
+      "2026-08-30",
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("does not revalidate when a historical todo cannot be deleted", async () => {
+    mocks.deleteTodoForUser.mockResolvedValue(null);
+    const { deleteTodo } = await import("@/app/actions/todos");
+
+    await deleteTodo(todoId);
+
+    expect(mocks.deleteTodoForUser).toHaveBeenCalledWith(
+      "user_1",
+      todoId,
+      "2026-08-30",
+    );
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("ignores malformed todo identifiers before checking completion", async () => {
     const { toggleTodo } = await import("@/app/actions/todos");
 
@@ -192,6 +222,15 @@ describe("todo Server Functions", () => {
     await toggleTodo(todoId, "true" as unknown as boolean);
 
     expect(mocks.setTodoCompletionForUser).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("ignores malformed todo identifiers before deleting", async () => {
+    const { deleteTodo } = await import("@/app/actions/todos");
+
+    await deleteTodo("not-a-uuid");
+
+    expect(mocks.deleteTodoForUser).not.toHaveBeenCalled();
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

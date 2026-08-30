@@ -108,6 +108,20 @@ export async function setTodoCompletionForUser(
   return result.rows[0] ?? null;
 }
 
+export async function deleteTodoForUser(
+  userId: string,
+  todoId: string,
+  currentDay = getCurrentCalendarDay(),
+): Promise<Todo | null> {
+  const result = await db.query<Todo>(
+    "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date = $3 RETURNING " +
+      todoColumns,
+    [todoId, userId, currentDay],
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export function groupTodosByDay(
   dates: CalendarDay[],
   todos: Todo[],

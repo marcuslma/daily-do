@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { deleteTodo } from "@/app/actions/todos";
 import { TodoCheckbox } from "@/components/todos/todo-checkbox";
 import type { TodoDay } from "@/lib/todos";
 import {
@@ -89,13 +90,24 @@ export function TodoList({ currentDay, days }: TodoListProps) {
                         </p>
                       </div>
                       {isCurrentDay ? (
-                        <Link
-                          aria-label={"Editar: " + todo.description}
-                          className="inline-flex h-8 items-center rounded-none border border-slate-300 px-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
-                          href={"/dashboard/todos/" + todo.id + "/edit"}
-                        >
-                          Editar
-                        </Link>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <Link
+                            aria-label={"Editar: " + todo.description}
+                            className="inline-flex h-8 items-center rounded-none border border-slate-300 px-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50"
+                            href={"/dashboard/todos/" + todo.id + "/edit"}
+                          >
+                            Editar
+                          </Link>
+                          <form action={deleteTodo.bind(null, todo.id)}>
+                            <button
+                              aria-label={"Excluir: " + todo.description}
+                              className="inline-flex h-8 items-center rounded-none border border-rose-300 px-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 group-data-[theme=dark]:border-rose-900 group-data-[theme=dark]:text-rose-300 group-data-[theme=dark]:hover:bg-rose-950/30 group-data-[theme=dark]:focus-visible:outline-rose-300"
+                              type="submit"
+                            >
+                              Excluir
+                            </button>
+                          </form>
+                        </div>
                       ) : null}
                     </li>
                   );

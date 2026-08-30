@@ -10,6 +10,7 @@ import {
 } from "@/lib/todo-schemas";
 import {
   createTodoForUser,
+  deleteTodoForUser,
   setTodoCompletionForUser,
   updateTodoForUser,
 } from "@/lib/todos";
@@ -119,6 +120,26 @@ export async function toggleTodo(
     session.user.id,
     parsed.data.todoId,
     parsed.data.completed,
+    currentDay,
+  );
+
+  if (todo) {
+    revalidatePath("/dashboard");
+  }
+}
+
+export async function deleteTodo(todoId: string): Promise<void> {
+  const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
+  const parsed = todoIdSchema.safeParse(todoId);
+
+  if (!parsed.success) {
+    return;
+  }
+
+  const todo = await deleteTodoForUser(
+    session.user.id,
+    parsed.data,
     currentDay,
   );
 

@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
   formatTimestamp: vi.fn(() => "28 de ago. de 2026"),
   signOut: vi.fn(),
   toggleTodo: vi.fn(),
+  deleteTodo: vi.fn(),
 }));
 
 vi.mock("@/lib/session", () => ({
@@ -55,6 +56,7 @@ vi.mock("@/app/actions/auth", () => ({
 
 vi.mock("@/app/actions/todos", () => ({
   toggleTodo: mocks.toggleTodo,
+  deleteTodo: mocks.deleteTodo,
 }));
 
 describe("DashboardPage", () => {

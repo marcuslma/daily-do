@@ -26,10 +26,10 @@ function calendarDayToDate(day: CalendarDay): Date {
 }
 
 export function getAppTimeZone(): string {
-  const timeZone = process.env.TZ?.trim();
+  const timeZone = process.env.DAILY_DO_TZ?.trim() || process.env.TZ?.trim();
 
   if (!timeZone) {
-    throw new Error("Missing required environment variable: TZ");
+    throw new Error("Missing required environment variable: DAILY_DO_TZ or TZ");
   }
 
   try {

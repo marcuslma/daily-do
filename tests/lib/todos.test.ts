@@ -169,6 +169,21 @@ describe("todo data layer", () => {
     );
   });
 
+  it("deletes only an occurrence owned by the user on the current day", async () => {
+    mocks.query.mockResolvedValueOnce({ rows: [openTodo] });
+    const { deleteTodoForUser } = await import("@/lib/todos");
+
+    await expect(
+      deleteTodoForUser("user_1", "todo_open", "2026-08-30"),
+    ).resolves.toEqual(openTodo);
+    expect(mocks.query).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date = $3",
+      ),
+      ["todo_open", "user_1", "2026-08-30"],
+    );
+  });
+
   it("preserves requested empty dates when grouping occurrences", async () => {
     const { groupTodosByDay } = await import("@/lib/todos");
 

@@ -4,6 +4,7 @@ import { TodoList } from "@/components/todos/todo-list";
 
 vi.mock("@/app/actions/todos", () => ({
   toggleTodo: vi.fn(),
+  deleteTodo: vi.fn(),
 }));
 
 describe("TodoList", () => {
@@ -60,6 +61,12 @@ describe("TodoList", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "Editar: Revisar projeto" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Excluir: Comprar café" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Excluir: Revisar projeto" }),
     ).not.toBeInTheDocument();
   });
 
