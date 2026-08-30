@@ -2,6 +2,7 @@ import { createTodo, updateTodo } from "@/app/actions/todos";
 import { TodoForm } from "@/components/todos/todo-form";
 import { getTodoForUser } from "@/lib/todos";
 import { requireSession } from "@/lib/session";
+import { getCurrentCalendarDay } from "@/lib/timezone";
 import { notFound } from "next/navigation";
 
 export async function NewTodoEditor() {
@@ -18,7 +19,7 @@ export async function EditTodoEditor({ todoId }: EditTodoEditorProps) {
   const session = await requireSession();
   const todo = await getTodoForUser(session.user.id, todoId);
 
-  if (!todo) {
+  if (!todo || todo.todoDate !== getCurrentCalendarDay()) {
     notFound();
   }
 

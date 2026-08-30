@@ -12,7 +12,7 @@ export function FormFeedback({ message, errors }: FormFeedbackProps) {
 
   return (
     <div
-      className="space-y-1 text-sm text-rose-700 group-data-[theme=dark]:text-rose-300"
+      className="space-y-1 text-xs text-rose-700 group-data-[theme=dark]:text-rose-300"
       role="alert"
     >
       {message ? <p>{message}</p> : null}

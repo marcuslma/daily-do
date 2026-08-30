@@ -18,16 +18,16 @@ type TodoFormProps = {
 };
 
 const inputClassName =
-  "mt-2 min-h-28 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-200 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus:ring-slate-700";
+  "mt-1 min-h-24 w-full resize-y rounded-none border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50";
 
 export function TodoForm({ action, description, submitLabel }: TodoFormProps) {
   const [state, formAction] = useActionState(action, initialTodoActionState);
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="space-y-4">
       <div>
         <label
-          className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
+          className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
           htmlFor="description"
         >
           Descrição
@@ -42,7 +42,7 @@ export function TodoForm({ action, description, submitLabel }: TodoFormProps) {
           required
           rows={4}
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.description} />
         </div>
       </div>

@@ -5,6 +5,8 @@ services:
       POSTGRES_DB: daily_do
       POSTGRES_USER: daily_do
       POSTGRES_PASSWORD: daily_do_local
+      TZ: ${TZ:-America/Sao_Paulo}
+    command: ["postgres", "-c", "timezone=${TZ:-America/Sao_Paulo}"]
     ports:
       - "5433:5432"
     volumes:

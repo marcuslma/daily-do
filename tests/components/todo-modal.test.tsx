@@ -13,15 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 function getCloseButton(): HTMLButtonElement {
-  const closeButton = screen
-    .getAllByRole("button", { name: "Fechar modal" })
-    .find((button) => button.className.includes("size-9"));
-
-  if (!closeButton) {
-    throw new Error("Modal close button was not rendered.");
-  }
-
-  return closeButton as HTMLButtonElement;
+  return screen.getByRole("button", { name: "Fechar modal" });
 }
 
 describe("TodoModal", () => {

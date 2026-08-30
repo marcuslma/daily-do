@@ -16,4 +16,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Version control
 
+- Nunca faça `commit` ou `push` sem solicitação explícita do usuário.
 - Ao final de cada implementação, sempre sugira uma mensagem de commit em inglês que descreva a alteração.

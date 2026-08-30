@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   createTodoForUser: vi.fn(),
   updateTodoForUser: vi.fn(),
   setTodoCompletionForUser: vi.fn(),
+  getCurrentCalendarDay: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(() => {
     throw new Error("NEXT_REDIRECT");
@@ -31,6 +32,10 @@ vi.mock("@/lib/todos", () => ({
   setTodoCompletionForUser: mocks.setTodoCompletionForUser,
 }));
 
+vi.mock("@/lib/timezone", () => ({
+  getCurrentCalendarDay: mocks.getCurrentCalendarDay,
+}));
+
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
 }));
@@ -44,6 +49,7 @@ describe("todo Server Functions", () => {
     vi.resetModules();
     vi.clearAllMocks();
     mocks.requireSession.mockResolvedValue({ user: { id: "user_1" } });
+    mocks.getCurrentCalendarDay.mockReturnValue("2026-08-30");
   });
 
   it("returns a description error before creating an invalid todo", async () => {
@@ -65,7 +71,11 @@ describe("todo Server Functions", () => {
       "NEXT_REDIRECT",
     );
 
-    expect(mocks.createTodoForUser).toHaveBeenCalledWith("user_1", "Comprar café");
+    expect(mocks.createTodoForUser).toHaveBeenCalledWith(
+      "user_1",
+      "Comprar café",
+      "2026-08-30",
+    );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
     expect(mocks.redirect).toHaveBeenCalledWith("/dashboard");
   });
@@ -97,6 +107,7 @@ describe("todo Server Functions", () => {
       "user_1",
       todoId,
       "Novo texto",
+      "2026-08-30",
     );
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
@@ -127,6 +138,7 @@ describe("todo Server Functions", () => {
       "user_1",
       todoId,
       "Novo texto",
+      "2026-08-30",
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
     expect(mocks.redirect).toHaveBeenCalledWith("/dashboard");
@@ -145,8 +157,24 @@ describe("todo Server Functions", () => {
       "user_1",
       todoId,
       true,
+      "2026-08-30",
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("does not revalidate when a historical todo cannot be completed", async () => {
+    mocks.setTodoCompletionForUser.mockResolvedValue(null);
+    const { toggleTodo } = await import("@/app/actions/todos");
+
+    await toggleTodo(todoId, true);
+
+    expect(mocks.setTodoCompletionForUser).toHaveBeenCalledWith(
+      "user_1",
+      todoId,
+      true,
+      "2026-08-30",
+    );
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
   it("ignores malformed todo identifiers before checking completion", async () => {

@@ -11,3 +11,4 @@ process.env.BETTER_AUTH_SECRET =
 process.env.BETTER_AUTH_URL = "http://localhost:3000";
 process.env.RESEND_API_KEY = "re_test";
 process.env.RESEND_FROM = "Daily Do <onboarding@resend.dev>";
+process.env.TZ = "America/Sao_Paulo";

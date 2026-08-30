@@ -14,6 +14,7 @@ import {
   updateTodoForUser,
 } from "@/lib/todos";
 import { requireSession } from "@/lib/session";
+import { getCurrentCalendarDay } from "@/lib/timezone";
 
 function getDescription(formData: FormData): string {
   const description = formData.get("description");
@@ -26,6 +27,7 @@ export async function createTodo(
   formData: FormData,
 ): Promise<TodoActionState> {
   const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
   const parsed = todoDescriptionSchema.safeParse({
     description: getDescription(formData),
   });
@@ -37,7 +39,11 @@ export async function createTodo(
   }
 
   try {
-    await createTodoForUser(session.user.id, parsed.data.description);
+    await createTodoForUser(
+      session.user.id,
+      parsed.data.description,
+      currentDay,
+    );
   } catch {
     return {
       message: "Não foi possível salvar a tarefa. Tente novamente.",
@@ -54,6 +60,7 @@ export async function updateTodo(
   formData: FormData,
 ): Promise<TodoActionState> {
   const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
   const parsedTodoId = todoIdSchema.safeParse(todoId);
   const parsed = todoDescriptionSchema.safeParse({
     description: getDescription(formData),
@@ -78,6 +85,7 @@ export async function updateTodo(
       session.user.id,
       parsedTodoId.data,
       parsed.data.description,
+      currentDay,
     );
   } catch {
     return {
@@ -100,6 +108,7 @@ export async function toggleTodo(
   completed: boolean,
 ): Promise<void> {
   const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
   const parsed = todoCompletionSchema.safeParse({ todoId, completed });
 
   if (!parsed.success) {
@@ -110,6 +119,7 @@ export async function toggleTodo(
     session.user.id,
     parsed.data.todoId,
     parsed.data.completed,
+    currentDay,
   );
 
   if (todo) {

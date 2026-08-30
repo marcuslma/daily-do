@@ -17,45 +17,45 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   );
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="space-y-4">
       <input name="token" type="hidden" value={token} />
       <div>
         <label
-          className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
+          className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
           htmlFor="password"
         >
           Nova senha
         </label>
         <input
           autoComplete="new-password"
-          className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-200 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus:ring-slate-700"
+          className="mt-1 h-9 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
           id="password"
           minLength={8}
           name="password"
           required
           type="password"
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.password} />
         </div>
       </div>
       <div>
         <label
-          className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
+          className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
           htmlFor="passwordConfirmation"
         >
           Confirmar nova senha
         </label>
         <input
           autoComplete="new-password"
-          className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-200 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus:ring-slate-700"
+          className="mt-1 h-9 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
           id="passwordConfirmation"
           minLength={8}
           name="passwordConfirmation"
           required
           type="password"
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.passwordConfirmation} />
         </div>
       </div>

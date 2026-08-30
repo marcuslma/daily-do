@@ -72,25 +72,25 @@ export function TodoModal({ children, title }: TodoModalProps) {
       <section
         aria-labelledby="todo-modal-title"
         aria-modal="true"
-        className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-200 group-data-[theme=dark]:bg-slate-900 group-data-[theme=dark]:ring-slate-700"
+        className="relative z-10 w-full max-w-lg border border-slate-200 bg-white p-4 group-data-[theme=dark]:border-slate-800 group-data-[theme=dark]:bg-slate-900"
         ref={dialogRef}
         role="dialog"
       >
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-4 flex items-center justify-between gap-4">
           <h2
-            className="text-xl font-semibold tracking-tight text-slate-950 group-data-[theme=dark]:text-slate-50"
+            className="text-lg font-semibold tracking-tight text-slate-950 group-data-[theme=dark]:text-slate-50"
             id="todo-modal-title"
           >
             {title}
           </h2>
           <button
             aria-label="Fechar modal"
-            className="inline-flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:hover:text-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
+            className="inline-flex size-8 items-center justify-center rounded-none text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:hover:text-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
             onClick={() => router.back()}
             ref={closeButtonRef}
             type="button"
           >
-            <X aria-hidden="true" size={18} />
+            <X aria-hidden="true" size={16} />
           </button>
         </div>
         {children}

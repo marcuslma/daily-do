@@ -8,15 +8,15 @@ import { SubmitButton } from "@/components/auth/submit-button";
 import { initialAuthActionState } from "@/lib/auth-action-state";
 
 const inputClassName =
-  "mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-200 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus:ring-slate-700";
+  "mt-1 h-9 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:placeholder:text-slate-500 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50";
 
 export function SignUpForm() {
   const [state, formAction] = useActionState(signUp, initialAuthActionState);
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="name">
+        <label className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="name">
           Nome
         </label>
         <input
@@ -28,12 +28,12 @@ export function SignUpForm() {
           required
           type="text"
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.name} />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="email">
+        <label className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="email">
           E-mail
         </label>
         <input
@@ -45,12 +45,12 @@ export function SignUpForm() {
           required
           type="email"
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.email} />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="password">
+        <label className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200" htmlFor="password">
           Senha
         </label>
         <input
@@ -62,15 +62,15 @@ export function SignUpForm() {
           required
           type="password"
         />
-        <div className="mt-2">
+        <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.password} />
         </div>
       </div>
       <FormFeedback message={state.message} />
       <SubmitButton pendingLabel="Criando conta...">Criar conta</SubmitButton>
-      <p className="text-center text-sm text-slate-600 group-data-[theme=dark]:text-slate-300">
+      <p className="text-center text-xs text-slate-600 group-data-[theme=dark]:text-slate-300">
         Já tem uma conta?{" "}
-        <Link className="font-semibold text-slate-950 underline group-data-[theme=dark]:text-slate-50" href="/sign-in">
+        <Link className="font-semibold text-slate-950 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50" href="/sign-in">
           Entrar
         </Link>
       </p>
