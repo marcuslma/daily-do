@@ -3,13 +3,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const themeMocks = vi.hoisted(() => ({
+  mounted: true,
   setTheme: vi.fn(),
+  resolvedTheme: "light" as string | undefined,
   theme: "system" as string | undefined,
 }));
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+
+  return {
+    ...actual,
+    useSyncExternalStore: () => themeMocks.mounted,
+  };
+});
 
 vi.mock("next-themes", () => ({
   useTheme: () => ({
     setTheme: themeMocks.setTheme,
+    resolvedTheme: themeMocks.resolvedTheme,
     theme: themeMocks.theme,
   }),
 }));
@@ -17,28 +29,65 @@ vi.mock("next-themes", () => ({
 describe("ThemeSwitcher", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    themeMocks.mounted = true;
+    themeMocks.resolvedTheme = "light";
     themeMocks.theme = "system";
   });
 
-  it("exposes the three available theme preferences", () => {
-    render(<ThemeSwitcher />);
+  it.each([
+    [false, "light"],
+    [true, undefined],
+  ])(
+    "does not expose the toggle before the effective theme is ready",
+    (mounted, resolvedTheme) => {
+      themeMocks.mounted = mounted;
+      themeMocks.resolvedTheme = resolvedTheme;
 
-    expect(
-      screen.getByRole("button", { name: "Usar tema claro" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Usar tema escuro" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Usar tema do sistema" }),
-    ).toHaveAttribute("aria-pressed", "true");
-  });
+      render(<ThemeSwitcher />);
 
-  it("selects the requested theme preference", () => {
-    render(<ThemeSwitcher />);
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    },
+  );
 
-    fireEvent.click(screen.getByRole("button", { name: "Usar tema escuro" }));
+  it.each([
+    ["system", "light", "Ativar tema escuro", "dark", "moon", "false"],
+    ["system", "dark", "Ativar tema claro", "light", "sun", "true"],
+    ["light", "light", "Ativar tema escuro", "dark", "moon", "false"],
+    ["dark", "dark", "Ativar tema claro", "light", "sun", "true"],
+  ])(
+    "toggles from %s when the effective theme is %s",
+    (theme, resolvedTheme, label, nextTheme, iconName, pressed) => {
+      themeMocks.theme = theme;
+      themeMocks.resolvedTheme = resolvedTheme;
 
-    expect(themeMocks.setTheme).toHaveBeenCalledWith("dark");
+      render(<ThemeSwitcher />);
+
+      const toggle = screen.getByRole("button", { name: label });
+
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+      expect(toggle).toHaveAttribute("aria-pressed", pressed);
+      expect(toggle).toHaveAttribute("title", label);
+      expect(toggle.querySelector("svg.lucide-" + iconName)).toBeInTheDocument();
+
+      fireEvent.click(toggle);
+
+      expect(themeMocks.setTheme).toHaveBeenCalledWith(nextTheme);
+    },
+  );
+
+  it("updates its icon and action after a theme selection", () => {
+    const { rerender } = render(<ThemeSwitcher />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ativar tema escuro" }),
+    );
+    themeMocks.theme = "dark";
+    themeMocks.resolvedTheme = "dark";
+    rerender(<ThemeSwitcher />);
+
+    const toggle = screen.getByRole("button", { name: "Ativar tema claro" });
+
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle.querySelector("svg.lucide-sun")).toBeInTheDocument();
   });
 });
