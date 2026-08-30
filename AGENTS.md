@@ -7,3 +7,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Styling
+
+- Toda estilização visual deve usar exclusivamente classes utilitárias do Tailwind CSS.
+- Não adicione CSS customizado, CSS Modules, `style` props, styled JSX ou folhas de estilo de terceiros.
+- `app/globals.css` deve conter somente `@import "tailwindcss";`.
+
+## Version control
+
+- Ao final de cada implementação, sempre sugira uma mensagem de commit em inglês que descreva a alteração.

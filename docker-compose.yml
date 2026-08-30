@@ -1,0 +1,19 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: daily_do
+      POSTGRES_USER: daily_do
+      POSTGRES_PASSWORD: daily_do_local
+    ports:
+      - "5433:5432"
+    volumes:
+      - daily_do_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U daily_do -d daily_do"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  daily_do_postgres_data:
