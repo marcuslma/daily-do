@@ -3,22 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const themeMocks = vi.hoisted(() => ({
-  mounted: true,
   setTheme: vi.fn(),
   resolvedTheme: "light" as string | undefined,
   theme: "system" as string | undefined,
 }));
 
-vi.mock("react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react")>();
-
-  return {
-    ...actual,
-    useSyncExternalStore: () => themeMocks.mounted,
-  };
-});
-
-vi.mock("next-themes", () => ({
+vi.mock("@/components/theme-provider", () => ({
   useTheme: () => ({
     setTheme: themeMocks.setTheme,
     resolvedTheme: themeMocks.resolvedTheme,
@@ -29,25 +19,17 @@ vi.mock("next-themes", () => ({
 describe("ThemeSwitcher", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    themeMocks.mounted = true;
     themeMocks.resolvedTheme = "light";
     themeMocks.theme = "system";
   });
 
-  it.each([
-    [false, "light"],
-    [true, undefined],
-  ])(
-    "does not expose the toggle before the effective theme is ready",
-    (mounted, resolvedTheme) => {
-      themeMocks.mounted = mounted;
-      themeMocks.resolvedTheme = resolvedTheme;
+  it("does not expose the toggle before the effective theme is ready", () => {
+    themeMocks.resolvedTheme = undefined;
 
-      render(<ThemeSwitcher />);
+    render(<ThemeSwitcher />);
 
-      expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    },
-  );
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
 
   it.each([
     ["system", "light", "Ativar tema escuro", "dark", "moon", "false"],

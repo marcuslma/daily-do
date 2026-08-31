@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { TodoActionState } from "@/lib/todo-action-state";
+import type { TodoSyncActionState } from "@/lib/todo-sync-action-state";
 import {
   todoCompletionSchema,
   todoDescriptionSchema,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/todo-schemas";
 import {
   createTodoForUser,
+  copyOpenTodosFromYesterdayForUser,
   deleteTodoForUser,
   setTodoCompletionForUser,
   updateTodoForUser,
@@ -145,5 +147,44 @@ export async function deleteTodo(todoId: string): Promise<void> {
 
   if (todo) {
     revalidatePath("/dashboard");
+  }
+}
+
+export async function synchronizePendingTodos(
+  _previousState: TodoSyncActionState,
+  _formData: FormData,
+): Promise<TodoSyncActionState> {
+  void _formData;
+
+  const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
+
+  try {
+    const copiedCount = await copyOpenTodosFromYesterdayForUser(
+      session.user.id,
+      currentDay,
+    );
+
+    revalidatePath("/dashboard");
+
+    if (copiedCount === 0) {
+      return {
+        message: "Nenhuma tarefa pendente de ontem para copiar.",
+        status: "success",
+      };
+    }
+
+    return {
+      message:
+        copiedCount === 1
+          ? "1 tarefa pendente sincronizada."
+          : copiedCount + " tarefas pendentes sincronizadas.",
+      status: "success",
+    };
+  } catch {
+    return {
+      message: "Não foi possível sincronizar as tarefas pendentes. Tente novamente.",
+      status: "error",
+    };
   }
 }

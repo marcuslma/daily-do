@@ -53,9 +53,9 @@ describe("TodoModal", () => {
   });
 
   it("restores focus to the prior element after closing", () => {
-    const trigger = document.createElement("button");
-    document.body.appendChild(trigger);
-    trigger.focus();
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
 
     const { unmount } = render(
       <TodoModal title="Nova tarefa">
@@ -65,7 +65,7 @@ describe("TodoModal", () => {
 
     unmount();
 
-    expect(trigger).toHaveFocus();
-    trigger.remove();
+    expect(opener).toHaveFocus();
+    opener.remove();
   });
 });

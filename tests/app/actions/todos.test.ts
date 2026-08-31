@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   updateTodoForUser: vi.fn(),
   setTodoCompletionForUser: vi.fn(),
   deleteTodoForUser: vi.fn(),
+  copyOpenTodosFromYesterdayForUser: vi.fn(),
   getCurrentCalendarDay: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(() => {
@@ -32,6 +33,7 @@ vi.mock("@/lib/todos", () => ({
   updateTodoForUser: mocks.updateTodoForUser,
   setTodoCompletionForUser: mocks.setTodoCompletionForUser,
   deleteTodoForUser: mocks.deleteTodoForUser,
+  copyOpenTodosFromYesterdayForUser: mocks.copyOpenTodosFromYesterdayForUser,
 }));
 
 vi.mock("@/lib/timezone", () => ({
@@ -231,6 +233,63 @@ describe("todo Server Functions", () => {
     await deleteTodo("not-a-uuid");
 
     expect(mocks.deleteTodoForUser).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("redirects an unauthenticated sync request before querying todos", async () => {
+    mocks.requireSession.mockRejectedValueOnce(new Error("NEXT_REDIRECT"));
+    const { synchronizePendingTodos } = await import("@/app/actions/todos");
+
+    await expect(
+      synchronizePendingTodos({}, new FormData()),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(mocks.copyOpenTodosFromYesterdayForUser).not.toHaveBeenCalled();
+  });
+
+  it("synchronizes yesterday's open todos for the current user", async () => {
+    mocks.copyOpenTodosFromYesterdayForUser.mockResolvedValue(2);
+    const { synchronizePendingTodos } = await import("@/app/actions/todos");
+
+    await expect(
+      synchronizePendingTodos({}, new FormData()),
+    ).resolves.toEqual({
+      message: "2 tarefas pendentes sincronizadas.",
+      status: "success",
+    });
+
+    expect(mocks.copyOpenTodosFromYesterdayForUser).toHaveBeenCalledWith(
+      "user_1",
+      "2026-08-30",
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("reports when there are no pending todos from yesterday", async () => {
+    mocks.copyOpenTodosFromYesterdayForUser.mockResolvedValue(0);
+    const { synchronizePendingTodos } = await import("@/app/actions/todos");
+
+    await expect(
+      synchronizePendingTodos({}, new FormData()),
+    ).resolves.toEqual({
+      message: "Nenhuma tarefa pendente de ontem para copiar.",
+      status: "success",
+    });
+  });
+
+  it("returns a safe message when pending todo synchronization fails", async () => {
+    mocks.copyOpenTodosFromYesterdayForUser.mockRejectedValue(
+      new Error("database unavailable"),
+    );
+    const { synchronizePendingTodos } = await import("@/app/actions/todos");
+
+    await expect(
+      synchronizePendingTodos({}, new FormData()),
+    ).resolves.toEqual({
+      message: "Não foi possível sincronizar as tarefas pendentes. Tente novamente.",
+      status: "error",
+    });
+
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

@@ -1,13 +1,24 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TodoList } from "@/components/todos/todo-list";
 
-vi.mock("@/app/actions/todos", () => ({
-  toggleTodo: vi.fn(),
+const mocks = vi.hoisted(() => ({
   deleteTodo: vi.fn(),
+  synchronizePendingTodos: vi.fn(),
+  toggleTodo: vi.fn(),
+}));
+
+vi.mock("@/app/actions/todos", () => ({
+  deleteTodo: mocks.deleteTodo,
+  synchronizePendingTodos: mocks.synchronizePendingTodos,
+  toggleTodo: mocks.toggleTodo,
 }));
 
 describe("TodoList", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("uses Lucide icons for the current todo edit and delete controls", () => {
     render(
       <TodoList
@@ -79,7 +90,46 @@ describe("TodoList", () => {
     expect(actionBar).toHaveClass("w-full", "sm:w-auto", "justify-end");
   });
 
-  it("stacks the day title and status on small screens", () => {
+  it("keeps the compact synchronization control in the current day header", () => {
+    render(
+      <TodoList
+        currentDay="2026-08-30"
+        days={[
+          { date: "2026-08-30", todos: [] },
+          { date: "2026-08-29", todos: [] },
+        ]}
+      />,
+    );
+
+    const button = screen.getByRole("button", {
+      name: "Sincronizar pendentes",
+    });
+    const currentHeader = screen.getByText("Hoje").closest("header");
+    const historicalHeader = screen.getByText("Somente leitura").closest("header");
+
+    expect(currentHeader).toContainElement(button);
+    expect(currentHeader?.firstElementChild).toHaveClass(
+      "flex-row",
+      "items-center",
+      "justify-between",
+    );
+    expect(button).toHaveClass("size-8");
+    expect(historicalHeader).not.toContainElement(button);
+    expect(historicalHeader).toHaveClass("flex-col", "sm:flex-row");
+  });
+
+  it("keeps synchronization feedback below the current day action row", async () => {
+    let resolveAction: (state: {
+      message: string;
+      status: "success";
+    }) => void;
+    mocks.synchronizePendingTodos.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+
     render(
       <TodoList
         currentDay="2026-08-30"
@@ -87,10 +137,24 @@ describe("TodoList", () => {
       />,
     );
 
-    expect(screen.getByText("Hoje").closest("header")).toHaveClass(
-      "flex-col",
-      "sm:flex-row",
+    fireEvent.click(
+      screen.getByRole("button", { name: "Sincronizar pendentes" }),
     );
+
+    await act(async () => {
+      resolveAction!({
+        message: "2 tarefas pendentes sincronizadas.",
+        status: "success",
+      });
+    });
+
+    await waitFor(() => {
+      const status = screen.getByRole("status");
+      const currentHeader = screen.getByText("Hoje").closest("header");
+
+      expect(status).toHaveTextContent("2 tarefas pendentes sincronizadas.");
+      expect(status.parentElement).toBe(currentHeader);
+    });
   });
 
   it("keeps historical occurrences readable without interactive controls", () => {

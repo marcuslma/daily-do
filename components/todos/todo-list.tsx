@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import { deleteTodo } from "@/app/actions/todos";
 import { TodoCheckbox } from "@/components/todos/todo-checkbox";
+import { CurrentTodoDayHeader } from "@/components/todos/current-todo-day-header";
 import type { TodoDay } from "@/lib/todos";
 import {
   formatCalendarDay,
@@ -27,17 +28,24 @@ export function TodoList({ currentDay, days }: TodoListProps) {
             className="space-y-2"
             key={todoDay.date}
           >
-            <header className="flex flex-col items-start gap-1 border-b border-slate-200 pb-2 group-data-[theme=dark]:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              <h2
-                className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-950 group-data-[theme=dark]:text-slate-50"
-                id={"todo-day-" + todoDay.date}
-              >
-                {formattedDay}
-              </h2>
-              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 group-data-[theme=dark]:text-slate-400">
-                {isCurrentDay ? "Hoje" : "Somente leitura"}
-              </span>
-            </header>
+            {isCurrentDay ? (
+              <CurrentTodoDayHeader
+                dayId={"todo-day-" + todoDay.date}
+                title={formattedDay}
+              />
+            ) : (
+              <header className="flex flex-col items-start gap-1 border-b border-slate-200 pb-2 group-data-[theme=dark]:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <h2
+                  className="min-w-0 text-xs font-semibold uppercase tracking-[0.08em] text-slate-950 group-data-[theme=dark]:text-slate-50"
+                  id={"todo-day-" + todoDay.date}
+                >
+                  {formattedDay}
+                </h2>
+                <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 group-data-[theme=dark]:text-slate-400">
+                  Somente leitura
+                </span>
+              </header>
+            )}
             {todoDay.todos.length === 0 ? (
               <p className="text-xs text-slate-500 group-data-[theme=dark]:text-slate-400">
                 Nenhuma tarefa registrada.

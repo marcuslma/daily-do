@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   formatCalendarDay: vi.fn((day: string) => day),
   formatTimestamp: vi.fn(() => "28 de ago. de 2026"),
   signOut: vi.fn(),
+  synchronizePendingTodos: vi.fn(),
   toggleTodo: vi.fn(),
   deleteTodo: vi.fn(),
 }));
@@ -55,6 +56,7 @@ vi.mock("@/app/actions/auth", () => ({
 }));
 
 vi.mock("@/app/actions/todos", () => ({
+  synchronizePendingTodos: mocks.synchronizePendingTodos,
   toggleTodo: mocks.toggleTodo,
   deleteTodo: mocks.deleteTodo,
 }));
@@ -114,6 +116,23 @@ describe("DashboardPage", () => {
         .getByRole("button", { name: "Sair" })
         .querySelector("svg.lucide-log-out"),
     ).toBeInTheDocument();
+  });
+
+  it("keeps the pending synchronization action out of the main controls", async () => {
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    const button = screen.getByRole("button", {
+      name: "Sincronizar pendentes",
+    });
+
+    expect(screen.getByText("Daily Do").closest("header")).not.toContainElement(
+      button,
+    );
   });
 
   it("keeps dashboard actions fluid on small screens", async () => {

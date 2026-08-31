@@ -43,7 +43,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             Olá, {session.user.name}
           </h1>
         </div>
-        <div className="flex w-full items-center gap-2 sm:w-auto">
+        <div className="flex w-full flex-wrap items-start gap-2 sm:w-auto sm:flex-nowrap sm:items-center">
           <Link
             className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-none bg-slate-950 px-3 text-xs font-medium text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:bg-slate-50 group-data-[theme=dark]:text-slate-950 group-data-[theme=dark]:hover:bg-slate-200 group-data-[theme=dark]:focus-visible:outline-slate-50 sm:flex-none"
             href="/dashboard/todos/new"

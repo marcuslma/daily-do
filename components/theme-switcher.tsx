@@ -1,20 +1,12 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
-
-const subscribeToHydration = () => () => undefined;
+import { useTheme } from "@/components/theme-provider";
 
 export function ThemeSwitcher() {
   const { resolvedTheme, setTheme } = useTheme();
-  const mounted = useSyncExternalStore(
-    subscribeToHydration,
-    () => true,
-    () => false,
-  );
 
-  if (!mounted || !resolvedTheme) {
+  if (!resolvedTheme) {
     return null;
   }
 

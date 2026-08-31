@@ -140,64 +140,43 @@ export function groupTodosByDay(
   }));
 }
 
-export async function rollOverOpenTodosThroughDate(
+export async function copyOpenTodosFromYesterdayForUser(
+  userId: string,
   targetDay: CalendarDay,
 ): Promise<number> {
   const client = await db.connect();
+  const sourceDay = shiftCalendarDay(targetDay, -1);
 
   try {
     await client.query("BEGIN");
 
-    const earliestResult = await client.query<{
-      earliestTodoDate: CalendarDay | null;
-    }>(
-      'SELECT MIN(todo_date)::text AS "earliestTodoDate" FROM todo WHERE todo_date < $1 AND completed_at IS NULL',
-      [targetDay],
+    const result = await client.query<{ id: string }>(
+      `INSERT INTO todo (
+        user_id,
+        description,
+        todo_date,
+        original_created_at,
+        carryover_count,
+        previous_todo_id
+      )
+      SELECT
+        user_id,
+        description,
+        $3::date,
+        original_created_at,
+        carryover_count + 1,
+        id
+      FROM todo
+      WHERE user_id = $1
+        AND todo_date = $2::date
+        AND completed_at IS NULL
+      ON CONFLICT (previous_todo_id) DO NOTHING
+      RETURNING id`,
+      [userId, sourceDay, targetDay],
     );
-    const earliestTodoDate = earliestResult.rows[0]?.earliestTodoDate;
-
-    if (!earliestTodoDate) {
-      await client.query("COMMIT");
-      return 0;
-    }
-
-    let carriedOver = 0;
-
-    for (
-      let sourceDay = earliestTodoDate;
-      sourceDay < targetDay;
-      sourceDay = shiftCalendarDay(sourceDay, 1)
-    ) {
-      const nextDay = shiftCalendarDay(sourceDay, 1);
-      const result = await client.query<{ id: string }>(
-        `INSERT INTO todo (
-          user_id,
-          description,
-          todo_date,
-          original_created_at,
-          carryover_count,
-          previous_todo_id
-        )
-        SELECT
-          user_id,
-          description,
-          $2::date,
-          original_created_at,
-          carryover_count + 1,
-          id
-        FROM todo
-        WHERE todo_date = $1::date
-          AND completed_at IS NULL
-        ON CONFLICT (previous_todo_id) DO NOTHING
-        RETURNING id`,
-        [sourceDay, nextDay],
-      );
-
-      carriedOver += result.rows.length;
-    }
 
     await client.query("COMMIT");
-    return carriedOver;
+    return result.rows.length;
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
