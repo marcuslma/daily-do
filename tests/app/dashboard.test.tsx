@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import DashboardPage from "@/app/dashboard/page";
 
@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   requireSession: vi.fn(),
   getEarliestTodoDateForUser: vi.fn(),
   listTodosForUser: vi.fn(),
+  listScheduledTodosForUser: vi.fn(),
   groupTodosByDay: vi.fn(),
   getCurrentCalendarDay: vi.fn(),
   calendarDayDistance: vi.fn(),
@@ -38,6 +39,7 @@ vi.mock("@/lib/session", () => ({
 vi.mock("@/lib/todos", () => ({
   getEarliestTodoDateForUser: mocks.getEarliestTodoDateForUser,
   listTodosForUser: mocks.listTodosForUser,
+  listScheduledTodosForUser: mocks.listScheduledTodosForUser,
   groupTodosByDay: mocks.groupTodosByDay,
 }));
 
@@ -80,6 +82,15 @@ describe("DashboardPage", () => {
       "2026-08-28",
     ]);
     mocks.listTodosForUser.mockResolvedValue([todo]);
+    mocks.listScheduledTodosForUser.mockResolvedValue([
+      todo,
+      {
+        ...todo,
+        id: "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d2",
+        description: "Revisar projeto",
+        todoDate: "2026-09-02",
+      },
+    ]);
     mocks.groupTodosByDay.mockImplementation((dates, todos) =>
       dates.map((date: string) => ({
         date,
@@ -185,5 +196,27 @@ describe("DashboardPage", () => {
     expect(
       screen.getByRole("link", { name: "Carregar 3 dias anteriores" }),
     ).toHaveAttribute("href", "/dashboard?days=6");
+  });
+
+  it("composes the scheduled agenda from current and future todo dates", async () => {
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(mocks.listScheduledTodosForUser).toHaveBeenCalledWith(
+      "user_1",
+      "2026-08-30",
+    );
+    expect(screen.getByText("Comprar café")).toBeInTheDocument();
+    expect(screen.queryByText("Revisar projeto")).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ativar visão de agenda" }),
+    );
+
+    expect(screen.getByText("Revisar projeto")).toBeInTheDocument();
   });
 });

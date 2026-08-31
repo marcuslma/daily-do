@@ -41,6 +41,20 @@ export async function listTodosForUser(
   return result.rows;
 }
 
+export async function listScheduledTodosForUser(
+  userId: string,
+  firstDay = getCurrentCalendarDay(),
+): Promise<Todo[]> {
+  const result = await db.query<Todo>(
+    "SELECT " +
+      todoColumns +
+      " FROM todo WHERE user_id = $1 AND todo_date >= $2 ORDER BY todo_date ASC, completed_at IS NOT NULL ASC, created_at DESC",
+    [userId, firstDay],
+  );
+
+  return result.rows;
+}
+
 export async function getEarliestTodoDateForUser(
   userId: string,
 ): Promise<CalendarDay | null> {
@@ -82,12 +96,13 @@ export async function updateTodoForUser(
   userId: string,
   todoId: string,
   description: string,
+  todoDate: CalendarDay,
   currentDay = getCurrentCalendarDay(),
 ): Promise<Todo | null> {
   const result = await db.query<Todo>(
-    "UPDATE todo SET description = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND todo_date = $4 RETURNING " +
+    "UPDATE todo SET description = $3, todo_date = $4, completed_at = CASE WHEN $4 > $5 THEN NULL ELSE completed_at END, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND todo_date >= $5 RETURNING " +
       todoColumns,
-    [todoId, userId, description, currentDay],
+    [todoId, userId, description, todoDate, currentDay],
   );
 
   return result.rows[0] ?? null;
@@ -114,7 +129,7 @@ export async function deleteTodoForUser(
   currentDay = getCurrentCalendarDay(),
 ): Promise<Todo | null> {
   const result = await db.query<Todo>(
-    "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date = $3 RETURNING " +
+    "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date >= $3 RETURNING " +
       todoColumns,
     [todoId, userId, currentDay],
   );

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TodoList } from "@/components/todos/todo-list";
+import { TodoAgenda, TodoList } from "@/components/todos/todo-list";
 
 const mocks = vi.hoisted(() => ({
   deleteTodo: vi.fn(),
@@ -54,6 +54,13 @@ describe("TodoList", () => {
         .getByRole("button", { name: "Excluir: Comprar café" })
         .querySelector("svg.lucide-trash-2"),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Editar: Comprar café" })).toHaveAttribute(
+      "title",
+      "Editar: Comprar café",
+    );
+    expect(
+      screen.getByRole("button", { name: "Excluir: Comprar café" }),
+    ).toHaveAttribute("title", "Excluir: Comprar café");
   });
 
   it("moves current todo controls below its content on small screens", () => {
@@ -118,7 +125,7 @@ describe("TodoList", () => {
     expect(historicalHeader).toHaveClass("flex-col", "sm:flex-row");
   });
 
-  it("keeps synchronization feedback below the current day action row", async () => {
+  it("keeps synchronization feedback with the current day sync control", async () => {
     let resolveAction: (state: {
       message: string;
       status: "success";
@@ -150,10 +157,13 @@ describe("TodoList", () => {
 
     await waitFor(() => {
       const status = screen.getByRole("status");
-      const currentHeader = screen.getByText("Hoje").closest("header");
+      const syncButton = screen.getByRole("button", {
+        name: "Sincronizar pendentes",
+      });
 
       expect(status).toHaveTextContent("2 tarefas pendentes sincronizadas.");
-      expect(status.parentElement).toBe(currentHeader);
+      expect(status).toHaveAttribute("aria-live", "polite");
+      expect(status.parentElement).toContainElement(syncButton);
     });
   });
 
@@ -217,6 +227,73 @@ describe("TodoList", () => {
     expect(
       screen.queryByRole("button", { name: "Excluir: Revisar projeto" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("allows scheduled occurrences to be edited or deleted without a completion checkbox", () => {
+    render(
+      <TodoList
+        currentDay="2026-08-30"
+        days={[
+          {
+            date: "2026-08-31",
+            todos: [
+              {
+                id: "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d3",
+                description: "Revisar projeto",
+                todoDate: "2026-08-31",
+                originalCreatedAt: new Date("2026-08-29T12:00:00.000Z"),
+                carryoverCount: 0,
+                previousTodoId: null,
+                createdAt: new Date("2026-08-29T12:00:00.000Z"),
+                updatedAt: new Date("2026-08-29T12:00:00.000Z"),
+                completedAt: null,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Agendada")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Editar: Revisar projeto" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Excluir: Revisar projeto" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "Concluir: Revisar projeto" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps pending synchronization reachable from the empty scheduled agenda", () => {
+    render(<TodoAgenda currentDay="2026-08-30" days={[]} />);
+
+    expect(
+      screen.getByText("Nenhuma tarefa agendada a partir de hoje."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sincronizar pendentes" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps pending synchronization reachable from an agenda with only future days", () => {
+    render(
+      <TodoAgenda
+        currentDay="2026-08-30"
+        days={[
+          {
+            date: "2026-08-31",
+            todos: [],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Agendada")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sincronizar pendentes" }),
+    ).toBeInTheDocument();
   });
 
   it("shows every supplied day even when it has no occurrences", () => {

@@ -1,11 +1,16 @@
 import { signOut } from "@/app/actions/auth";
-import { TodoList } from "@/components/todos/todo-list";
+import {
+  TodoAgenda,
+  TodoList,
+} from "@/components/todos/todo-list";
+import { DashboardViewSwitcher } from "@/components/todos/dashboard-view-switcher";
 import { LogOut, Plus } from "lucide-react";
 import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import {
   getEarliestTodoDateForUser,
   groupTodosByDay,
+  listScheduledTodosForUser,
   listTodosForUser,
 } from "@/lib/todos";
 import {
@@ -20,7 +25,10 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const { days } = await props.searchParams;
   const session = await requireSession();
   const currentDay = getCurrentCalendarDay();
-  const earliestDay = await getEarliestTodoDateForUser(session.user.id);
+  const [earliestDay, scheduledTodos] = await Promise.all([
+    getEarliestTodoDateForUser(session.user.id),
+    listScheduledTodosForUser(session.user.id, currentDay),
+  ]);
   const maximum = earliestDay
     ? Math.max(3, calendarDayDistance(earliestDay, currentDay) + 1)
     : 3;
@@ -30,6 +38,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     session.user.id,
     dates[dates.length - 1]!,
     currentDay,
+  );
+  const scheduledDates = Array.from(
+    new Set(scheduledTodos.map((todo) => todo.todoDate)),
   );
 
   return (
@@ -62,15 +73,33 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           </form>
         </div>
       </header>
-      <TodoList currentDay={currentDay} days={groupTodosByDay(dates, todos)} />
-      {visibleCount < maximum ? (
-        <Link
-          className="inline-flex h-9 w-full items-center justify-center self-start rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50 sm:w-auto"
-          href={"/dashboard?days=" + (visibleCount + DASHBOARD_DAY_INCREMENT)}
-        >
-          Carregar 3 dias anteriores
-        </Link>
-      ) : null}
+      <DashboardViewSwitcher
+        agenda={
+          <TodoAgenda
+            currentDay={currentDay}
+            days={groupTodosByDay(scheduledDates, scheduledTodos)}
+          />
+        }
+        history={
+          <>
+            <TodoList
+              currentDay={currentDay}
+              days={groupTodosByDay(dates, todos)}
+            />
+            {visibleCount < maximum ? (
+              <Link
+                className="inline-flex h-9 w-full items-center justify-center self-start rounded-none border border-slate-300 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:text-slate-200 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:focus-visible:outline-slate-50 sm:w-auto"
+                href={
+                  "/dashboard?days=" +
+                  (visibleCount + DASHBOARD_DAY_INCREMENT)
+                }
+              >
+                Carregar 3 dias anteriores
+              </Link>
+            ) : null}
+          </>
+        }
+      />
     </main>
   );
 }

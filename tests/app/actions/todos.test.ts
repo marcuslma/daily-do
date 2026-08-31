@@ -36,9 +36,14 @@ vi.mock("@/lib/todos", () => ({
   copyOpenTodosFromYesterdayForUser: mocks.copyOpenTodosFromYesterdayForUser,
 }));
 
-vi.mock("@/lib/timezone", () => ({
-  getCurrentCalendarDay: mocks.getCurrentCalendarDay,
-}));
+vi.mock("@/lib/timezone", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/timezone")>();
+
+  return {
+    ...actual,
+    getCurrentCalendarDay: mocks.getCurrentCalendarDay,
+  };
+});
 
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
@@ -70,6 +75,7 @@ describe("todo Server Functions", () => {
     const { createTodo } = await import("@/app/actions/todos");
     const formData = new FormData();
     formData.set("description", "  Comprar café  ");
+    formData.set("todoDate", "2026-09-02");
 
     await expect(createTodo(initialTodoActionState, formData)).rejects.toThrow(
       "NEXT_REDIRECT",
@@ -78,10 +84,40 @@ describe("todo Server Functions", () => {
     expect(mocks.createTodoForUser).toHaveBeenCalledWith(
       "user_1",
       "Comprar café",
-      "2026-08-30",
+      "2026-09-02",
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
     expect(mocks.redirect).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("returns a date error before creating a todo in the past", async () => {
+    const { createTodo } = await import("@/app/actions/todos");
+    const formData = new FormData();
+    formData.set("description", "Comprar café");
+    formData.set("todoDate", "2026-08-29");
+
+    await expect(
+      createTodo(initialTodoActionState, formData),
+    ).resolves.toEqual({
+      fieldErrors: { todoDate: ["Escolha hoje ou uma data futura."] },
+    });
+
+    expect(mocks.createTodoForUser).not.toHaveBeenCalled();
+  });
+
+  it("returns a date error before creating a todo with an impossible calendar date", async () => {
+    const { createTodo } = await import("@/app/actions/todos");
+    const formData = new FormData();
+    formData.set("description", "Comprar café");
+    formData.set("todoDate", "2026-02-30");
+
+    await expect(
+      createTodo(initialTodoActionState, formData),
+    ).resolves.toEqual({
+      fieldErrors: { todoDate: ["Informe uma data válida."] },
+    });
+
+    expect(mocks.createTodoForUser).not.toHaveBeenCalled();
   });
 
   it("returns a safe message when persistence fails during creation", async () => {
@@ -89,6 +125,7 @@ describe("todo Server Functions", () => {
     const { createTodo } = await import("@/app/actions/todos");
     const formData = new FormData();
     formData.set("description", "Comprar café");
+    formData.set("todoDate", "2026-08-30");
 
     await expect(
       createTodo(initialTodoActionState, formData),
@@ -102,6 +139,7 @@ describe("todo Server Functions", () => {
     const { updateTodo } = await import("@/app/actions/todos");
     const formData = new FormData();
     formData.set("description", "Novo texto");
+    formData.set("todoDate", "2026-09-02");
 
     await expect(
       updateTodo(todoId, initialTodoActionState, formData),
@@ -111,6 +149,7 @@ describe("todo Server Functions", () => {
       "user_1",
       todoId,
       "Novo texto",
+      "2026-09-02",
       "2026-08-30",
     );
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
@@ -120,6 +159,7 @@ describe("todo Server Functions", () => {
     const { updateTodo } = await import("@/app/actions/todos");
     const formData = new FormData();
     formData.set("description", "Novo texto");
+    formData.set("todoDate", "2026-08-30");
 
     await expect(
       updateTodo("not-a-uuid", initialTodoActionState, formData),
@@ -133,6 +173,7 @@ describe("todo Server Functions", () => {
     const { updateTodo } = await import("@/app/actions/todos");
     const formData = new FormData();
     formData.set("description", "Novo texto");
+    formData.set("todoDate", "2026-09-02");
 
     await expect(
       updateTodo(todoId, initialTodoActionState, formData),
@@ -142,6 +183,7 @@ describe("todo Server Functions", () => {
       "user_1",
       todoId,
       "Novo texto",
+      "2026-09-02",
       "2026-08-30",
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");

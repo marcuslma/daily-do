@@ -10,8 +10,9 @@ O Daily Do é uma aplicação de tarefas diárias com autenticação por e-mail 
 - Login automático após o cadastro e redirecionamentos entre áreas públicas e protegidas.
 - Ocorrências diárias com data original de criação e contador cumulativo de adiamentos.
 - Criação e edição em modal, com rotas paralelas, interceptadas e fallback para acesso direto por URL.
-- Criação, edição, conclusão e exclusão rápida no dia atual; dias anteriores são estritamente somente leitura.
 - Histórico diário navegável: começa hoje + dois dias anteriores e carrega mais três a cada ação.
+- Agenda horizontal com apenas os dias atuais ou futuros que têm tarefas; a escolha entre Histórico e Agenda fica salva localmente no navegador.
+- Datas de tarefas selecionáveis de hoje em diante: tarefas atuais podem ser concluídas, editadas ou excluídas; tarefas futuras podem ser editadas ou excluídas; dias anteriores são estritamente somente leitura.
 - Sincronização manual e idempotente das pendências de ontem para hoje.
 - Tema claro, escuro ou do sistema — o sistema é o padrão.
 - Operações de escrita feitas por Server Functions; não há endpoints de API próprios para as tarefas.
@@ -88,7 +89,9 @@ O comando `npm run db:setup` executa esse arquivo contra o contêiner local. Ele
 
 Cada linha de `todo` representa uma ocorrência de um único dia definido por `DAILY_DO_TZ` — ou por `TZ` como fallback local. Ao clicar em **Sincronizar pendentes**, as tarefas não concluídas de ontem são copiadas — nunca movidas — para hoje. A cópia preserva a data da primeira criação e incrementa o contador exibido como, por exemplo, `Adiada 2× · Criada em 28 de ago. de 2026`.
 
-No dia atual, uma tarefa pode ser criada, editada, concluída ou excluída. A exclusão remove somente a ocorrência do dia corrente; não altera o histórico. Os dias passados são somente leitura na interface, nas Server Functions e nas consultas SQL de atualização. O dashboard sempre mostra o dia corrente e os dois anteriores; o botão de histórico acrescenta três dias anteriores por vez, incluindo datas sem tarefas. Nenhuma tarefa é copiada sem essa ação manual.
+Cada tarefa recebe uma data de hoje ou de um dia futuro. No dia atual, ela pode ser criada, editada, concluída ou excluída. Uma tarefa futura pode ser editada, remarcada para hoje ou outra data futura, ou excluída, mas só pode ser concluída no próprio dia. A exclusão remove apenas aquela ocorrência; não altera o histórico. Os dias passados são somente leitura na interface, nas Server Functions e nas consultas SQL de atualização.
+
+O dashboard começa no **Histórico**, que mostra o dia atual e os dois anteriores; o botão de histórico acrescenta três dias anteriores por vez, incluindo datas sem tarefas. A **Agenda** mostra somente dias atuais ou futuros que já têm tarefas, em ordem cronológica, e permite navegar horizontalmente entre eles. A escolha entre Histórico e Agenda é salva somente no `localStorage` deste navegador, sem sincronização entre dispositivos. Nenhuma tarefa é copiada sem a ação manual de sincronização.
 
 ### Vercel
 

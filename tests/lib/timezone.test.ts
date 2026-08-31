@@ -42,6 +42,13 @@ describe("timezone helpers", () => {
     ]);
   });
 
+  it("accepts real calendar days and rejects impossible dates", async () => {
+    const { isCalendarDay } = await import("@/lib/timezone");
+
+    expect(isCalendarDay("2026-02-28")).toBe(true);
+    expect(isCalendarDay("2026-02-30")).toBe(false);
+  });
+
   it("clamps dashboard history input to a safe user history range", async () => {
     const { getDashboardDayCount } = await import("@/lib/timezone");
 

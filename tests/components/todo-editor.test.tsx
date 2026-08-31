@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
 
 const todoId = "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d1";
 
@@ -27,7 +28,11 @@ vi.mock("@/app/actions/todos", () => ({
 }));
 
 vi.mock("@/components/todos/todo-form", () => ({
-  TodoForm: () => null,
+  TodoForm: (props: { todoDate: string; minimumTodoDate: string }) => (
+    <output data-testid="todo-form-props">
+      {props.todoDate + ":" + props.minimumTodoDate}
+    </output>
+  ),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -63,5 +68,26 @@ describe("EditTodoEditor", () => {
 
     expect(mocks.getTodoForUser).toHaveBeenCalledWith("user_1", todoId);
     expect(mocks.notFound).toHaveBeenCalledOnce();
+  });
+
+  it("passes a future task date and current-day minimum to the form", async () => {
+    mocks.getTodoForUser.mockResolvedValue({
+      id: todoId,
+      description: "Comprar café",
+      todoDate: "2026-09-02",
+      originalCreatedAt: new Date("2026-08-30T12:00:00.000Z"),
+      carryoverCount: 0,
+      previousTodoId: null,
+      createdAt: new Date("2026-08-30T12:00:00.000Z"),
+      updatedAt: new Date("2026-08-30T12:00:00.000Z"),
+      completedAt: null,
+    });
+    const { EditTodoEditor } = await import("@/components/todos/todo-editor");
+
+    render(await EditTodoEditor({ todoId }));
+
+    expect(screen.getByTestId("todo-form-props")).toHaveTextContent(
+      "2026-09-02:2026-08-30",
+    );
   });
 });

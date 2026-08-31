@@ -16,6 +16,8 @@ describe("TodoForm", () => {
       <TodoForm
         action={saveTodo}
         description=""
+        todoDate="2026-08-30"
+        minimumTodoDate="2026-08-30"
         submitIcon={submitIcon}
         submitLabel={submitLabel}
       />,
@@ -34,6 +36,8 @@ describe("TodoForm", () => {
       <TodoForm
         action={saveTodo}
         description="Comprar café"
+        todoDate="2026-09-02"
+        minimumTodoDate="2026-08-30"
         submitIcon="save"
         submitLabel="Salvar alterações"
       />,
@@ -47,11 +51,31 @@ describe("TodoForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders the scheduled date with the current-day minimum", () => {
+    render(
+      <TodoForm
+        action={saveTodo}
+        description=""
+        todoDate="2026-09-02"
+        minimumTodoDate="2026-08-30"
+        submitIcon="create"
+        submitLabel="Criar tarefa"
+      />,
+    );
+
+    expect(screen.getByLabelText("Data")).toHaveAttribute("name", "todoDate");
+    expect(screen.getByLabelText("Data")).toHaveAttribute("type", "date");
+    expect(screen.getByLabelText("Data")).toHaveAttribute("min", "2026-08-30");
+    expect(screen.getByLabelText("Data")).toHaveValue("2026-09-02");
+  });
+
   it("limits the editable description to 500 characters", () => {
     render(
       <TodoForm
         action={saveTodo}
         description=""
+        todoDate="2026-08-30"
+        minimumTodoDate="2026-08-30"
         submitIcon="create"
         submitLabel="Criar tarefa"
       />,

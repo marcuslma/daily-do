@@ -3,6 +3,18 @@ export type CalendarDay = string;
 export const INITIAL_DASHBOARD_DAY_COUNT = 3;
 export const DASHBOARD_DAY_INCREMENT = 3;
 
+export function isCalendarDay(value: string): value is CalendarDay {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsed = new Date(value + "T12:00:00.000Z");
+
+  return (
+    !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+  );
+}
+
 function getDateParts(instant: Date, timeZone: string): Record<string, string> {
   return Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
@@ -18,7 +30,7 @@ function getDateParts(instant: Date, timeZone: string): Record<string, string> {
 }
 
 function calendarDayToDate(day: CalendarDay): Date {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+  if (!isCalendarDay(day)) {
     throw new Error("Invalid calendar day: " + day);
   }
 

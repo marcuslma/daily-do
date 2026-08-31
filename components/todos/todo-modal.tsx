@@ -88,6 +88,7 @@ export function TodoModal({ children, title }: TodoModalProps) {
             className="inline-flex size-8 items-center justify-center rounded-none text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:text-slate-300 group-data-[theme=dark]:hover:bg-slate-800 group-data-[theme=dark]:hover:text-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
             onClick={() => router.back()}
             ref={closeButtonRef}
+            title="Fechar modal"
             type="button"
           >
             <X aria-hidden="true" size={16} />

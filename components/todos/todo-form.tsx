@@ -15,6 +15,8 @@ type TodoFormProps = {
     formData: FormData,
   ) => Promise<TodoActionState>;
   description: string;
+  todoDate: string;
+  minimumTodoDate: string;
   submitIcon: "create" | "save";
   submitLabel: string;
 };
@@ -25,6 +27,8 @@ const inputClassName =
 export function TodoForm({
   action,
   description,
+  todoDate,
+  minimumTodoDate,
   submitIcon,
   submitLabel,
 }: TodoFormProps) {
@@ -52,6 +56,26 @@ export function TodoForm({
         />
         <div className="mt-1">
           <FormFeedback errors={state.fieldErrors?.description} />
+        </div>
+      </div>
+      <div>
+        <label
+          className="text-xs font-medium text-slate-800 group-data-[theme=dark]:text-slate-200"
+          htmlFor="todoDate"
+        >
+          Data
+        </label>
+        <input
+          className="mt-1 w-full rounded-none border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
+          defaultValue={todoDate}
+          id="todoDate"
+          min={minimumTodoDate}
+          name="todoDate"
+          required
+          type="date"
+        />
+        <div className="mt-1">
+          <FormFeedback errors={state.fieldErrors?.todoDate} />
         </div>
       </div>
       <FormFeedback message={state.message} />

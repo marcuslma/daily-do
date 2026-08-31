@@ -72,6 +72,25 @@ describe("todoDescriptionSchema", () => {
   });
 });
 
+describe("todoFormSchema", () => {
+  it("rejects an impossible todo date", async () => {
+    const { todoDateSchema } = await import("@/lib/todo-schemas");
+
+    expect(todoDateSchema.safeParse("2026-02-30").success).toBe(false);
+  });
+
+  it("trims a valid description while preserving a valid todo date", async () => {
+    const { todoFormSchema } = await import("@/lib/todo-schemas");
+
+    expect(
+      todoFormSchema.parse({
+        description: "  Comprar café  ",
+        todoDate: "2026-09-02",
+      }),
+    ).toEqual({ description: "Comprar café", todoDate: "2026-09-02" });
+  });
+});
+
 describe("todo data layer", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -88,6 +107,25 @@ describe("todo data layer", () => {
       expect.stringContaining("todo_date >= $2 AND todo_date <= $3"),
       ["user_1", "2026-08-28", "2026-08-30"],
     );
+  });
+
+  it("lists scheduled occurrences for a user from the requested day onward", async () => {
+    mocks.query.mockResolvedValueOnce({ rows: [openTodo] });
+    const { listScheduledTodosForUser } = await import("@/lib/todos");
+
+    await expect(
+      listScheduledTodosForUser("user_1", "2026-08-30"),
+    ).resolves.toEqual([openTodo]);
+    expect(mocks.query).toHaveBeenCalledWith(
+      expect.stringContaining("todo_date >= $2"),
+      ["user_1", "2026-08-30"],
+    );
+    const [scheduledQuery] = mocks.query.mock.calls[0] as [string];
+
+    expect(scheduledQuery).toMatch(
+      /WHERE\s+user_id\s*=\s*\$1\s+AND\s+todo_date\s*>=\s*\$2/,
+    );
+    expect(scheduledQuery).toMatch(/ORDER\s+BY\s+todo_date\s+ASC/);
   });
 
   it("finds the earliest date with an occurrence for the user", async () => {
@@ -138,7 +176,7 @@ describe("todo data layer", () => {
     );
   });
 
-  it("does not update an occurrence outside the current day", async () => {
+  it("updates an occurrence for its user only when it is today or scheduled", async () => {
     mocks.query.mockResolvedValueOnce({ rows: [] });
     const { updateTodoForUser } = await import("@/lib/todos");
 
@@ -147,12 +185,33 @@ describe("todo data layer", () => {
         "user_1",
         "todo_open",
         "Novo texto",
+        "2026-09-02",
         "2026-08-30",
       ),
     ).resolves.toBeNull();
     expect(mocks.query).toHaveBeenCalledWith(
-      expect.stringContaining("todo_date = $4"),
-      ["todo_open", "user_1", "Novo texto", "2026-08-30"],
+      expect.stringContaining("todo_date >= $5"),
+      ["todo_open", "user_1", "Novo texto", "2026-09-02", "2026-08-30"],
+    );
+  });
+
+  it("clears completion atomically when a completed current occurrence is rescheduled to the future", async () => {
+    mocks.query.mockResolvedValueOnce({ rows: [] });
+    const { updateTodoForUser } = await import("@/lib/todos");
+
+    await expect(
+      updateTodoForUser(
+        "user_1",
+        "todo_done",
+        "Ler um capítulo",
+        "2026-09-02",
+        "2026-08-30",
+      ),
+    ).resolves.toBeNull();
+    const [updateQuery] = mocks.query.mock.calls[0] as [string];
+
+    expect(updateQuery).toMatch(
+      /completed_at\s*=\s*CASE\s+WHEN\s+\$4\s*>\s*\$5\s+THEN\s+NULL\s+ELSE\s+completed_at\s+END/i,
     );
   });
 
@@ -169,7 +228,7 @@ describe("todo data layer", () => {
     );
   });
 
-  it("deletes only an occurrence owned by the user on the current day", async () => {
+  it("deletes only a current or scheduled occurrence owned by the user", async () => {
     mocks.query.mockResolvedValueOnce({ rows: [openTodo] });
     const { deleteTodoForUser } = await import("@/lib/todos");
 
@@ -178,7 +237,7 @@ describe("todo data layer", () => {
     ).resolves.toEqual(openTodo);
     expect(mocks.query).toHaveBeenCalledWith(
       expect.stringContaining(
-        "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date = $3",
+        "DELETE FROM todo WHERE id = $1 AND user_id = $2 AND todo_date >= $3",
       ),
       ["todo_open", "user_1", "2026-08-30"],
     );

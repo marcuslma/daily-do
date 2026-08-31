@@ -43,6 +43,7 @@ describe("TodoModal", () => {
     const closeButton = getCloseButton();
     const submitButton = screen.getByRole("button", { name: "Salvar tarefa" });
 
+    expect(closeButton).toHaveAttribute("title", "Fechar modal");
     expect(closeButton).toHaveFocus();
 
     fireEvent.keyDown(document, { key: "Tab", shiftKey: true });

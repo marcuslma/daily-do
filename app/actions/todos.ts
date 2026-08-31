@@ -6,7 +6,7 @@ import type { TodoActionState } from "@/lib/todo-action-state";
 import type { TodoSyncActionState } from "@/lib/todo-sync-action-state";
 import {
   todoCompletionSchema,
-  todoDescriptionSchema,
+  todoFormSchema,
   todoIdSchema,
 } from "@/lib/todo-schemas";
 import {
@@ -25,14 +25,21 @@ function getDescription(formData: FormData): string {
   return typeof description === "string" ? description : "";
 }
 
+function getTodoDate(formData: FormData): string {
+  const todoDate = formData.get("todoDate");
+
+  return typeof todoDate === "string" ? todoDate : "";
+}
+
 export async function createTodo(
   _previousState: TodoActionState,
   formData: FormData,
 ): Promise<TodoActionState> {
   const session = await requireSession();
   const currentDay = getCurrentCalendarDay();
-  const parsed = todoDescriptionSchema.safeParse({
+  const parsed = todoFormSchema.safeParse({
     description: getDescription(formData),
+    todoDate: getTodoDate(formData),
   });
 
   if (!parsed.success) {
@@ -41,11 +48,17 @@ export async function createTodo(
     };
   }
 
+  if (parsed.data.todoDate < currentDay) {
+    return {
+      fieldErrors: { todoDate: ["Escolha hoje ou uma data futura."] },
+    };
+  }
+
   try {
     await createTodoForUser(
       session.user.id,
       parsed.data.description,
-      currentDay,
+      parsed.data.todoDate,
     );
   } catch {
     return {
@@ -65,8 +78,9 @@ export async function updateTodo(
   const session = await requireSession();
   const currentDay = getCurrentCalendarDay();
   const parsedTodoId = todoIdSchema.safeParse(todoId);
-  const parsed = todoDescriptionSchema.safeParse({
+  const parsed = todoFormSchema.safeParse({
     description: getDescription(formData),
+    todoDate: getTodoDate(formData),
   });
 
   if (!parsedTodoId.success) {
@@ -81,6 +95,12 @@ export async function updateTodo(
     };
   }
 
+  if (parsed.data.todoDate < currentDay) {
+    return {
+      fieldErrors: { todoDate: ["Escolha hoje ou uma data futura."] },
+    };
+  }
+
   let todo;
 
   try {
@@ -88,6 +108,7 @@ export async function updateTodo(
       session.user.id,
       parsedTodoId.data,
       parsed.data.description,
+      parsed.data.todoDate,
       currentDay,
     );
   } catch {

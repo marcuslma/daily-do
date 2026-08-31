@@ -7,11 +7,14 @@ import { notFound } from "next/navigation";
 
 export async function NewTodoEditor() {
   await requireSession();
+  const currentDay = getCurrentCalendarDay();
 
   return (
     <TodoForm
       action={createTodo}
       description=""
+      todoDate={currentDay}
+      minimumTodoDate={currentDay}
       submitIcon="create"
       submitLabel="Criar tarefa"
     />
@@ -24,9 +27,10 @@ type EditTodoEditorProps = {
 
 export async function EditTodoEditor({ todoId }: EditTodoEditorProps) {
   const session = await requireSession();
+  const currentDay = getCurrentCalendarDay();
   const todo = await getTodoForUser(session.user.id, todoId);
 
-  if (!todo || todo.todoDate !== getCurrentCalendarDay()) {
+  if (!todo || todo.todoDate < currentDay) {
     notFound();
   }
 
@@ -34,6 +38,8 @@ export async function EditTodoEditor({ todoId }: EditTodoEditorProps) {
     <TodoForm
       action={updateTodo.bind(null, todo.id)}
       description={todo.description}
+      todoDate={todo.todoDate}
+      minimumTodoDate={currentDay}
       submitIcon="save"
       submitLabel="Salvar alterações"
     />

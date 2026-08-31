@@ -80,6 +80,36 @@ describe("CurrentTodoDayHeader", () => {
     ).toBeEnabled();
   });
 
+  it("puts resolved synchronization feedback in a full-width row below the compact day row", async () => {
+    mocks.synchronizePendingTodos.mockResolvedValue({
+      message: "2 tarefas pendentes sincronizadas.",
+      status: "success",
+    });
+
+    render(
+      <CurrentTodoDayHeader
+        dayId="todo-day-2026-08-30"
+        title="30 de ago. de 2026"
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Sincronizar pendentes" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "2 tarefas pendentes sincronizadas.",
+      );
+    });
+
+    const header = screen.getByText("Hoje").closest("header");
+    const syncFeedbackRow = screen.getByRole("status").parentElement;
+
+    expect(syncFeedbackRow).toHaveClass("w-full", "items-end");
+    expect(syncFeedbackRow?.parentElement).toBe(header);
+  });
+
   it("announces a comprehensible synchronization error", async () => {
     mocks.synchronizePendingTodos.mockResolvedValue({
       message: "Não foi possível sincronizar as tarefas pendentes. Tente novamente.",
