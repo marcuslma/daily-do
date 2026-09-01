@@ -24,7 +24,7 @@ export function CurrentTodoDayHeader({
           </span>
         </div>
       </div>
-      <TodoSyncControl className="flex w-full flex-col items-end" />
+      <TodoSyncControl className="flex w-full flex-row items-center justify-end gap-2" />
     </header>
   );
 }

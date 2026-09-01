@@ -42,6 +42,12 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const scheduledDates = Array.from(
     new Set(scheduledTodos.map((todo) => todo.todoDate)),
   );
+  const agendaDates = Array.from(new Set([...dates, ...scheduledDates])).sort();
+  const agendaTodos = Array.from(
+    new Map(
+      [...todos, ...scheduledTodos].map((todo) => [todo.id, todo]),
+    ).values(),
+  );
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-5 px-4 pb-6 pt-16 text-slate-950 group-data-[theme=dark]:text-slate-50 sm:gap-6 sm:px-6 sm:py-8">
@@ -77,7 +83,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
         agenda={
           <TodoAgenda
             currentDay={currentDay}
-            days={groupTodosByDay(scheduledDates, scheduledTodos)}
+            days={groupTodosByDay(agendaDates, agendaTodos)}
           />
         }
         history={

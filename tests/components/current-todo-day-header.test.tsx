@@ -80,7 +80,7 @@ describe("CurrentTodoDayHeader", () => {
     ).toBeEnabled();
   });
 
-  it("puts resolved synchronization feedback in a full-width row below the compact day row", async () => {
+  it("keeps resolved synchronization feedback alongside the compact control", async () => {
     mocks.synchronizePendingTodos.mockResolvedValue({
       message: "2 tarefas pendentes sincronizadas.",
       status: "success",
@@ -103,11 +103,16 @@ describe("CurrentTodoDayHeader", () => {
       );
     });
 
-    const header = screen.getByText("Hoje").closest("header");
-    const syncFeedbackRow = screen.getByRole("status").parentElement;
+    const syncControl = screen.getByRole("status").parentElement;
+    const syncButton = screen.getByRole("button", {
+      name: "Sincronizar pendentes",
+    });
 
-    expect(syncFeedbackRow).toHaveClass("w-full", "items-end");
-    expect(syncFeedbackRow?.parentElement).toBe(header);
+    expect(syncControl).toContainElement(syncButton);
+    expect(syncControl).toHaveClass("flex-row", "items-center");
+    expect(screen.getByRole("status")).not.toHaveClass("mt-1", "w-full");
+    expect(screen.getByRole("status")).toHaveClass("text-left");
+    expect(screen.getByRole("status")).not.toHaveClass("text-right");
   });
 
   it("announces a comprehensible synchronization error", async () => {

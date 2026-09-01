@@ -296,6 +296,38 @@ describe("TodoList", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens the agenda on today and enables both directions when adjacent days exist", () => {
+    render(
+      <TodoAgenda
+        currentDay="2026-08-30"
+        days={[
+          { date: "2026-08-31", todos: [] },
+          { date: "2026-08-30", todos: [] },
+          { date: "2026-08-29", todos: [] },
+        ]}
+      />,
+    );
+
+    const agenda = screen.getByLabelText("Agenda de tarefas");
+    const scrollTo = vi.fn();
+
+    Object.defineProperty(agenda, "clientWidth", {
+      configurable: true,
+      value: 100,
+    });
+    Object.defineProperty(agenda, "scrollTo", {
+      configurable: true,
+      value: scrollTo,
+    });
+
+    expect(screen.getByRole("button", { name: "Dia anterior" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Próximo dia" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Dia anterior" }));
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, behavior: "smooth" });
+  });
+
   it("shows every supplied day even when it has no occurrences", () => {
     render(
       <TodoList

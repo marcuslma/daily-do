@@ -28,15 +28,21 @@ export function TodoList({ currentDay, days }: TodoListProps) {
 }
 
 export function TodoAgenda({ currentDay, days }: TodoListProps) {
-  const hasCurrentDay = days.some((todoDay) => todoDay.date === currentDay);
+  const agendaDays = [...days].sort((firstDay, secondDay) =>
+    firstDay.date.localeCompare(secondDay.date),
+  );
+  const currentDayIndex = agendaDays.findIndex(
+    (todoDay) => todoDay.date === currentDay,
+  );
+  const hasCurrentDay = currentDayIndex !== -1;
 
-  if (days.length === 0) {
+  if (agendaDays.length === 0) {
     return (
       <div className="space-y-3">
         <p className="text-xs text-slate-500 group-data-[theme=dark]:text-slate-400">
           Nenhuma tarefa agendada a partir de hoje.
         </p>
-        <TodoSyncControl className="flex flex-col items-end" />
+        <TodoSyncControl className="flex w-full flex-row items-center justify-end gap-2" />
       </div>
     );
   }
@@ -44,10 +50,13 @@ export function TodoAgenda({ currentDay, days }: TodoListProps) {
   return (
     <div className="space-y-3">
       {hasCurrentDay ? null : (
-        <TodoSyncControl className="flex flex-col items-end" />
+        <TodoSyncControl className="flex w-full flex-row items-center justify-end gap-2" />
       )}
-      <TodoAgendaCarousel dates={days.map((todoDay) => todoDay.date)}>
-        {days.map((todoDay) => (
+      <TodoAgendaCarousel
+        dates={agendaDays.map((todoDay) => todoDay.date)}
+        initialIndex={Math.max(0, currentDayIndex)}
+      >
+        {agendaDays.map((todoDay) => (
           <div className="w-full shrink-0 snap-start" key={todoDay.date}>
             <TodoDayPanel currentDay={currentDay} todoDay={todoDay} />
           </div>

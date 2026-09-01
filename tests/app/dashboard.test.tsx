@@ -219,4 +219,30 @@ describe("DashboardPage", () => {
 
     expect(screen.getByText("Revisar projeto")).toBeInTheDocument();
   });
+
+  it("includes a loaded prior-day todo in the agenda navigation", async () => {
+    mocks.listTodosForUser.mockResolvedValue([
+      todo,
+      {
+        ...todo,
+        id: "8a7e5f1d-0d55-4b63-b386-0258f4a4c0d3",
+        description: "Registrar retrospectiva",
+        todoDate: "2026-08-29",
+      },
+    ]);
+
+    render(
+      await DashboardPage({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ativar visão de agenda" }),
+    );
+
+    expect(screen.getByText("Registrar retrospectiva")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dia anterior" })).toBeEnabled();
+  });
 });

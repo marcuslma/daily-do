@@ -18,6 +18,20 @@ export function TodoSyncControl({ className }: TodoSyncControlProps) {
 
   return (
     <div className={className}>
+      {state.message ? (
+        <p
+          aria-live="polite"
+          className={
+            "min-w-0 flex-1 break-words text-left text-[11px] leading-4 " +
+            (state.status === "error"
+              ? "text-rose-700 group-data-[theme=dark]:text-rose-300"
+              : "text-emerald-700 group-data-[theme=dark]:text-emerald-300")
+          }
+          role="status"
+        >
+          {state.message}
+        </p>
+      ) : null}
       <form action={formAction} className="shrink-0">
         <button
           aria-busy={isPending}
@@ -35,20 +49,6 @@ export function TodoSyncControl({ className }: TodoSyncControlProps) {
           />
         </button>
       </form>
-      {state.message ? (
-        <p
-          aria-live="polite"
-          className={
-            "mt-1 w-full break-words text-[11px] leading-4 " +
-            (state.status === "error"
-              ? "text-rose-700 group-data-[theme=dark]:text-rose-300"
-              : "text-emerald-700 group-data-[theme=dark]:text-emerald-300")
-          }
-          role="status"
-        >
-          {state.message}
-        </p>
-      ) : null}
     </div>
   );
 }
