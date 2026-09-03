@@ -69,6 +69,24 @@ describe("TodoForm", () => {
     expect(screen.getByLabelText("Data")).toHaveValue("2026-09-02");
   });
 
+  it("matches the native date picker color scheme to the selected theme", () => {
+    render(
+      <TodoForm
+        action={saveTodo}
+        description=""
+        todoDate="2026-09-02"
+        minimumTodoDate="2026-08-30"
+        submitIcon="create"
+        submitLabel="Criar tarefa"
+      />,
+    );
+
+    expect(screen.getByLabelText("Data")).toHaveClass(
+      "[color-scheme:light]",
+      "group-data-[theme=dark]:[color-scheme:dark]",
+    );
+  });
+
   it("limits the editable description to 500 characters", () => {
     render(
       <TodoForm

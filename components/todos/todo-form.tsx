@@ -66,7 +66,7 @@ export function TodoForm({
           Data
         </label>
         <input
-          className="mt-1 w-full rounded-none border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
+          className="mt-1 w-full rounded-none border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition [color-scheme:light] focus:border-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950 group-data-[theme=dark]:border-slate-700 group-data-[theme=dark]:bg-slate-950 group-data-[theme=dark]:text-slate-50 group-data-[theme=dark]:[color-scheme:dark] group-data-[theme=dark]:focus:border-slate-50 group-data-[theme=dark]:focus-visible:outline-slate-50"
           defaultValue={todoDate}
           id="todoDate"
           min={minimumTodoDate}
